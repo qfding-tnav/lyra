@@ -39,7 +39,7 @@ jobs:
       - name: Run Evaluator Agent
         env:
           GITHUB_TOKEN: ${{ secrets.AGENT_PAT || secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # Fallback to PR #1 if run manually, otherwise use the actual PR number
           PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
           REPO_NAME: ${{ github.repository }}

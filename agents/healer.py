@@ -9,7 +9,7 @@ def main():
     token = os.getenv("GITHUB_TOKEN")
     repo_name = os.getenv("REPO_NAME")
     pr_number = os.getenv("PR_NUMBER")
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("LLM_API_KEY")
     feedback = os.getenv("COMMENT_BODY")
 
     if not all([token, repo_name, pr_number, api_key, feedback]):

@@ -8,7 +8,7 @@ def main():
     token = os.getenv("GITHUB_TOKEN")
     repo_name = os.getenv("REPO_NAME")
     pr_number = os.getenv("PR_NUMBER")
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("LLM_API_KEY")
 
     if not all([token, repo_name, pr_number, api_key]):
         print("Error: Missing required environment variables!")

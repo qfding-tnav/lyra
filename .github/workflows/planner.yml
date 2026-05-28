@@ -26,7 +26,7 @@ jobs:
       - name: Run Planner Agent
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # The secret you added earlier
+          LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }} # The secret you added earlier
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
         run: python agents/planner.py

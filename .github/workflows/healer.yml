@@ -38,7 +38,7 @@ jobs:
       - name: Run Healer Agent
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
           COMMENT_BODY: ${{ github.event.comment.body }}
