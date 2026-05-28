@@ -1,0 +1,32 @@
+name: Agent Planner
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  plan-tasks:
+    runs-on: ubuntu-latest
+    # Explicitly grant permissions to modify the issue
+    permissions:
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Planner Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # The secret you added earlier
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO_NAME: ${{ github.repository }}
+        run: python agents/planner.py

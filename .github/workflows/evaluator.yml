@@ -1,0 +1,46 @@
+name: Agent Evaluator
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    inputs:
+      pr_number:
+        description: 'Pull Request Number to Evaluate (e.g., 2)'
+        required: true
+        type: string
+
+jobs:
+  evaluate-code:
+    runs-on: ubuntu-latest
+
+    # Needs permissions to comment on and merge PRs
+    permissions:
+      pull-requests: write
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Local Tests (Pytest)
+        run: |
+          export PYTHONPATH=src
+          pytest || echo "Tests failed, proceeding to LLM evaluation..."
+
+      - name: Run Evaluator Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.AGENT_PAT || secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Fallback to PR #1 if run manually, otherwise use the actual PR number
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+          REPO_NAME: ${{ github.repository }}
+        run: python agents/evaluator.py

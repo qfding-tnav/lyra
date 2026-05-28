@@ -1,0 +1,56 @@
+name: Agent Healer
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  fix-code:
+    # Only run if the comment is on a PR and contains our failure trigger
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '❌')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history so we can switch branches
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Checkout PR Branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Use GitHub CLI to checkout the PR branch locally
+          gh pr checkout ${{ github.event.issue.number }}
+
+      - name: Run Healer Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPO_NAME: ${{ github.repository }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: python agents/healer.py
+
+      - name: Commit and Push Fixes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add .
+          git commit -m "fix: agent applied fixes based on evaluator feedback" || echo "No changes to commit"
+          git push origin HEAD
