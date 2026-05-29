@@ -3,9 +3,12 @@ name: Agent Planner
 on:
   issues:
     types: [opened]
+  issue_comment:
+    types: [ created ] # Wake up when a human replies with feedback or approval
 
 jobs:
   plan-tasks:
+    if: github.event.sender.type != 'Bot'
     runs-on: ubuntu-latest
     # Explicitly grant permissions to modify the issue
     permissions:
@@ -29,4 +32,6 @@ jobs:
           LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }} # The secret you added earlier
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: python agents/planner.py

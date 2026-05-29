@@ -1,65 +1,175 @@
 import os
 import sys
+
 from github import Github, Auth
 from openai import OpenAI
 
 
-def main():
-    # 1. Fetch environment variables passed from GitHub Actions
-    token = os.getenv("GITHUB_TOKEN")
-    repo_name = os.getenv("REPO_NAME")
-    issue_number = os.getenv("ISSUE_NUMBER")
-    api_key = os.getenv("LLM_API_KEY")
+class Planner:
+    ST_LB_PLAN_APPROVED = "status:plan-approved"
 
-    if not all([token, repo_name, issue_number, api_key]):
-        print("Error: Missing required environment variables!")
-        sys.exit(1)
+    def __init__(self):
+        """Initializes the Planner Agent, loading configuration, clients, and skills."""
+        # 1. Load Environment Variables
+        self.github_token = os.getenv("GITHUB_TOKEN")
+        self.llm_api_key = os.getenv("LLM_API_KEY")
+        self.repo_name = os.getenv("REPO_NAME")
+        self.issue_number = os.getenv("ISSUE_NUMBER")
+        self.event_name = os.getenv("EVENT_NAME", "issues")
+        self.comment_body = os.getenv("COMMENT_BODY", "").strip()
 
-    # 2. Initialize GitHub and OpenAI clients
-    auth = Auth.Token(token)
-    gh = Github(auth=auth)
-    repo = gh.get_repo(repo_name)
-    issue = repo.get_issue(number=int(issue_number))
-    client = OpenAI(api_key=api_key)
+        self._validate_env_vars()
 
-    print(f"Processing Issue #{issue_number}: {issue.title}")
+        # 2. Initialize Clients
+        auth = Auth.Token(self.github_token)
+        self.gh = Github(auth=auth)
+        self.repo = self.gh.get_repo(self.repo_name)
+        self.issue = self.repo.get_issue(number=int(self.issue_number))
+        self.llm_client = OpenAI(api_key=self.llm_api_key)
 
-    # 3. Construct the prompt for the LLM
-    system_prompt = """You are an expert Python Software Architect.
-    Your task is to break down the user's request into a concrete checklist of development tasks.
-    Output ONLY a Markdown formatted task list using checkboxes. Do not include extra conversational text.
+        # 3. Load Available Skills
+        self.skills_context = self._load_skills()
 
-    Example format:
-    - [ ] Task 1: Write core logic in src/converter.py
-    - [ ] Task 2: Write tests in tests/test_converter.py
-    """
+        # A standard signature so the bot can easily find its own past comments
+        self.bot_signature = "🤖 **Agent Planner:"
 
-    user_prompt = f"Issue Title: {issue.title}\nIssue Description: {issue.body}"
+    def _validate_env_vars(self):
+        """Ensures all required environment variables are present."""
+        required_vars = {
+            "GITHUB_TOKEN": self.github_token,
+            "LLM_API_KEY": self.llm_api_key,
+            "REPO_NAME": self.repo_name,
+            "ISSUE_NUMBER": self.issue_number
+        }
+        missing = [k for k, v in required_vars.items() if not v]
+        if missing:
+            print(f"Error: Missing required environment variables: {', '.join(missing)}")
+            sys.exit(1)
 
-    # 4. Call the LLM to generate the plan
-    response = client.chat.completions.create(
-        model="gpt-5.4",  # Feel free to change this if using a different model
-        messages=[
+    def _load_skills(self):
+        """Reads the skill.md file to understand the agent's capabilities."""
+        # Assumes skill.md is located in agents/skills/skill.md
+        return ""
+        current_dir = os.path.dirname(__file__)
+        skills_path = os.path.join(current_dir, "skills", "skill.md")
+
+        try:
+            with open(skills_path, "r", encoding="utf-8") as f:
+                print(f"Successfully loaded skills from {skills_path}")
+                return f.read()
+        except FileNotFoundError:
+            print(f"Warning: Skills file not found at {skills_path}. Proceeding without skill context.")
+            return "No specific framework skills documented."
+
+    def _generate_plan(self, issue_title, issue_body, feedback=None, previous_plan=None):
+        """Core logic to communicate with the LLM and generate a Markdown plan."""
+        system_prompt = (
+            "You are an expert AI Software Architect and Planner. Your job is to take a user's "
+            "feature request and break it down into a clear, step-by-step technical implementation plan. "
+            "The plan should be ready for a Generator AI agent to execute.\n\n"
+            "### AVAILABLE FRAMEWORK SKILLS\n"
+            "The Generator agent has access to the following skills/tools:\n"
+            f"{self.skills_context}\n\n"
+            "### INSTRUCTIONS\n"
+            "Keep the above skills in mind. When outlining steps, explicitly mention which skills "
+            "the Generator should use for specific tasks if applicable. "
+            "Format your output in Markdown, using numbered lists for steps."
+        )
+
+        user_prompt = f"Objective: {issue_title}\nDetails: {issue_body}\n\n"
+
+        if feedback and previous_plan:
+            user_prompt += (
+                f"Here is the previous plan we created:\n{previous_plan}\n\n"
+                f"The human reviewer provided this feedback: '{feedback}'\n\n"
+                "Please revise the plan based strictly on this feedback."
+            )
+        else:
+            user_prompt += "Please generate the initial step-by-step implementation plan."
+
+        print("Calling LLM to generate plan...")
+        messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ]
-    )
+        ai_params = {
+            "model": "gpt-5.4",
+            "input": messages,
+            "stream": False
+        }
+        response = self.llm_client.responses.create(**ai_params)
+        return response.output_text.strip()
 
-    plan = response.choices[0].message.content
+    def _get_previous_plan(self):
+        """Scans the issue comments to find the most recent plan generated by the bot."""
+        comments = list(self.issue.get_comments())
+        for comment in reversed(comments):
+            if self.bot_signature in comment.body:
+                return comment.body
+        return ""
 
-    # 5. Append the plan to the GitHub Issue and label it
-    new_body = f"{issue.body if issue.body else ''}\n\n### Agent Task Breakdown 🤖\n\n{plan}"
-    issue.edit(body=new_body)
+    def handle_initial_plan(self):
+        """Handles the creation of a brand-new issue."""
+        print("Scenario: New Issue Opened. Generating initial plan.")
+        plan = self._generate_plan(self.issue.title, self.issue.body)
 
-    # Try to add a label, create it if it doesn't exist
-    try:
-        issue.add_to_labels("status:planned")
-    except:
-        repo.create_label(name="status:planned", color="0e8a16")
-        issue.add_to_labels("status:planned")
+        comment_text = (
+            f"{self.bot_signature} Initial Plan Draft**\n\n"
+            f"{plan}\n\n"
+            "---\n*Reply to this comment with feedback to update the plan, or reply with `/approve` to send it to the Generator Agent.*"
+        )
+        self.issue.create_comment(comment_text)
+        print("Initial plan posted to GitHub.")
 
-    print("✅ Planning complete! Issue updated successfully.")
+    def handle_approval(self):
+        """Handles the human trigger to approve the plan and hand off to the Generator."""
+        print("Approval detected. Adding label...")
+        self.issue.add_to_labels(self.ST_LB_PLAN_APPROVED)
+        self.issue.create_comment(
+            "✅ **Plan Approved!** The `plan-approved` label has been added. The Generator Agent will now take over.")
+        print("Issue labeled as approved.")
+
+    def handle_feedback(self):
+        """Handles human feedback by fetching the previous plan and rewriting it."""
+        print("Feedback detected. Fetching previous plan to update...")
+        previous_plan = self._get_previous_plan()
+
+        if not previous_plan:
+            print("Could not find a previous plan to update. Treating as a new plan request.")
+
+        updated_plan = self._generate_plan(
+            issue_title=self.issue.title,
+            issue_body=self.issue.body,
+            feedback=self.comment_body,
+            previous_plan=previous_plan
+        )
+
+        comment_text = (
+            f"{self.bot_signature} Updated Plan Draft**\n\n"
+            f"{updated_plan}\n\n"
+            "---\n*Reply with more feedback to update, or reply with `/approve` to begin coding.*"
+        )
+        self.issue.create_comment(comment_text)
+        print("Updated plan posted to GitHub.")
+
+    def execute(self):
+        """Main routing function based on GitHub workflow events."""
+        print(f"Running Planner Agent for Issue #{self.issue_number} triggered by {self.event_name}")
+
+        if self.event_name == "issues":
+            self.handle_initial_plan()
+
+        elif self.event_name == "issue_comment":
+            print(f"Scenario: New Comment detected: {self.comment_body}")
+            if self.comment_body.lower() == "/approve":
+                self.handle_approval()
+            else:
+                self.handle_feedback()
+
+        else:
+            print(f"Unhandled event type: {self.event_name}")
 
 
 if __name__ == "__main__":
-    main()
+    agent = Planner()
+    agent.execute()

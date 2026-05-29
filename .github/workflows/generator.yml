@@ -2,12 +2,12 @@ name: Agent Generator
 
 on:
   issues:
-    types: [labeled]
+    types: [ labeled ]
 
 jobs:
   generate-code:
     # Only run if the label added was 'status: planned'
-    if: github.event.label.name == 'status:planned'
+    if: github.event.label.name == 'status:plan-approved'
     runs-on: ubuntu-latest
 
     # Needs permissions to push code and create PRs
