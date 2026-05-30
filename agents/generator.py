@@ -1,87 +1,69 @@
 import os
 import sys
-import re
+
 from github import Github, Auth
-from openai import OpenAI
+
+from constants import agent_constants, section_constants
+from tools.open_ai_client import OpenAiClient
 
 
-def main():
-    token = os.getenv("GITHUB_TOKEN")
-    repo_name = os.getenv("REPO_NAME")
-    issue_number = os.getenv("ISSUE_NUMBER")
-    api_key = os.getenv("LLM_API_KEY")
+class Generator:
+    def __init__(self):
+        self.github_token = os.getenv("GITHUB_TOKEN")
+        self.llm_api_key = os.getenv("LLM_API_KEY")
+        self.repo_name = os.getenv("REPO_NAME")
+        self.issue_number = os.getenv("ISSUE_NUMBER")
 
-    if not all([token, repo_name, issue_number, api_key]):
-        print("Error: Missing required environment variables!")
-        sys.exit(1)
-    auth = Auth.Token(token)
-    gh = Github(auth=auth)
-    repo = gh.get_repo(repo_name)
-    issue = repo.get_issue(number=int(issue_number))
-    client = OpenAI(api_key=api_key)
+        if not all([self.github_token, self.llm_api_key, self.repo_name, self.issue_number]):
+            print("Error: Missing required environment variables.")
+            sys.exit(1)
+        auth = Auth.Token(self.github_token)
+        self.gh = Github(auth=auth)
+        self.repo = self.gh.get_repo(self.repo_name)
+        self.issue = self.repo.get_issue(number=int(self.issue_number))
+        self.llm_client = OpenAiClient(self.llm_api_key)
 
-    # 1. Find the first unchecked task
-    body = issue.body
-    tasks = re.findall(r'- \[ \] (.*)', body)
+    def _get_approved_plan(self):
+        """Scans the issue to find the final approved plan from the Planner Agent."""
+        comments = list(self.issue.get_comments())
+        for comment in reversed(comments):
+            if (agent_constants.PLANNER_SIGNATURE in comment.body and
+                    section_constants.PLAN_DRAFT_HEADER in comment.body):
+                return comment.body
+        return None
 
-    if not tasks:
-        print("No pending tasks found. Exiting.")
-        sys.exit(0)
+    def execute(self):
+        print(f"Starting Generator Agent for Issue #{self.issue_number}")
 
-    current_task = tasks[0]
-    print(f"Working on task: {current_task}")
+        plan = self._get_approved_plan()
+        if not plan:
+            print("No plan found to execute. Exiting.")
+            return
 
-    # 2. Ask the LLM to write the code
-    system_prompt = """You are an expert Python Developer.
-    Your job is to write code based on the given task.
-    You MUST output the code using the following strict format so my script can parse it:
+        # Prepare the Agent's identity
+        system_prompt = (
+            "You are an expert Autonomous Software Engineer (The Generator Agent). "
+            "Your job is to execute the provided technical plan step-by-step. "
+            "You must use your available tools (create_file, read_file) to write the actual code. "
+            "When you have finished implementing all steps, return a final message summarizing what you built."
+        )
 
-    ===FILE: path/to/your/file.py===
-    <your python code here>
-    ===ENDFILE===
+        user_prompt = f"Here is the plan to execute:\n\n{plan}"
 
-    Do not output markdown code blocks outside of this format.
-    """
-
-    user_prompt = f"Issue Context: {issue.title}\nTask to implement: {current_task}\nPlease write the necessary code."
-
-    response = client.chat.completions.create(
-        model="gpt-5.4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-    )
-
-    llm_output = response.choices[0].message.content
-
-    # 3. Parse the LLM output and save the files locally
-    pattern = r'===FILE: (.*?)===\n(.*?)===ENDFILE==='
-    files_to_write = re.findall(pattern, llm_output, re.DOTALL)
-
-    if not files_to_write:
-        print("Could not parse any files from the LLM output.")
-        print("Raw output:", llm_output)
-        sys.exit(1)
-
-    for filepath, content in files_to_write:
-        filepath = filepath.strip()
-        print(f"Writing to {filepath}...")
-
-        # Ensure the directory exists (e.g., src/ or tests/)
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(content.strip() + '\n')
-
-    # 4. Remove the label so it doesn't trigger repeatedly (Evaluator will re-add if needed)
-    try:
-        issue.remove_from_labels("status:planned")
-    except:
-        pass
-
-    print("✅ Code generation complete. Files saved locally.")
+        print("Entering autonomous coding loop...")
+        response, msg = self.llm_client.call(user_prompt, [system_prompt], agent_constants.AGENT_GENERATOR)
+        if response:
+            final_summary = response.output_text.strip()
+            comment_text = (f"🛠️ **Agent Generator: Execution Complete**\n\n"
+                            f"I have finished writing the code based on the approved plan. "
+                            f"Here is the summary:\n\n{final_summary}")
+            self.issue.create_comment(comment_text)
+            print("Posted completion comment to GitHub.")
+        else:
+            print(msg)
+            self.issue.create_comment(msg)
 
 
 if __name__ == "__main__":
-    main()
+    agent = Generator()
+    agent.execute()

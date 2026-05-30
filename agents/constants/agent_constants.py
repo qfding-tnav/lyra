@@ -1,0 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+@File    :   agent_constants.py
+@Author  :   qfding
+@Date    :   2026-05-30
+@Desc    :   list all constants variables for agents
+"""
+
+AGENT_PLANNER = "planner"
+AGENT_GENERATOR = "generator"
+AGENT_EVALUATOR = "evaluator"
+AGENT_HEALER = "healer"
+
+PLANNER_SIGNATURE = "🤖 **Agent Planner:**"
+GENERATOR_SIGNATURE = "🤖 **Agent Generator:**"
+EVALUATOR_SIGNATURE = "🤖 **Agent Evaluator:**"
+HEALER_SIGNATURE = "🤖 **Agent Healer:**"

@@ -3,11 +3,12 @@ import sys
 
 from github import Github, Auth
 
+from constants import agent_constants, section_constants, label_constants
 from tools.open_ai_client import OpenAiClient
 
 
 class Planner:
-    ST_LB_PLAN_APPROVED = "status:plan-approved"
+    """This class is responsible for interacting with the GitHub API."""
 
     def __init__(self):
         """Initializes the Planner Agent, loading configuration, clients, and skills."""
@@ -32,7 +33,7 @@ class Planner:
         self.skills_context = self._load_skills()
 
         # A standard signature so the bot can easily find its own past comments
-        self.bot_signature = "🤖 **Agent Planner:"
+        self.bot_signature = agent_constants.PLANNER_SIGNATURE
 
     def _validate_env_vars(self):
         """Ensures all required environment variables are present."""
@@ -106,9 +107,10 @@ class Planner:
         plan = self._generate_plan(self.issue.title, self.issue.body)
 
         comment_text = (
-            f"{self.bot_signature} Initial Plan Draft**\n\n"
+            f"{self.bot_signature} Initial {section_constants.PLAN_DRAFT_HEADER}\n\n"
             f"{plan}\n\n"
-            "---\n*Reply to this comment with feedback to update the plan, or reply with `/approve` to send it to the Generator Agent.*"
+            "---\n*Reply to this comment with feedback to update the plan, "
+            f"or reply with `{section_constants.CMD_APPROVE}` to send it to the Generator Agent.*"
         )
         self.issue.create_comment(comment_text)
         print("Initial plan posted to GitHub.")
@@ -116,7 +118,7 @@ class Planner:
     def handle_approval(self):
         """Handles the human trigger to approve the plan and hand off to the Generator."""
         print("Approval detected. Adding label...")
-        self.issue.add_to_labels(self.ST_LB_PLAN_APPROVED)
+        self.issue.add_to_labels(label_constants.PLAN_APPROVED)
         self.issue.create_comment(
             "✅ **Plan Approved!** The `plan-approved` label has been added. The Generator Agent will now take over.")
         print("Issue labeled as approved.")
@@ -137,9 +139,10 @@ class Planner:
         )
 
         comment_text = (
-            f"{self.bot_signature} Updated Plan Draft**\n\n"
+            f"{self.bot_signature} Updated {section_constants.PLAN_DRAFT_HEADER}\n\n"
             f"{updated_plan}\n\n"
-            "---\n*Reply with more feedback to update, or reply with `/approve` to begin coding.*"
+            "---\n*Reply with more feedback to update, "
+            f"or reply with `{section_constants.CMD_APPROVE}` to begin coding.*"
         )
         self.issue.create_comment(comment_text)
         print("Updated plan posted to GitHub.")
@@ -153,7 +156,7 @@ class Planner:
 
         elif self.event_name == "issue_comment":
             print(f"Scenario: New Comment detected: {self.comment_body}")
-            if self.comment_body.lower() == "/approve":
+            if section_constants.CMD_APPROVE in self.comment_body.lower():
                 self.handle_approval()
             else:
                 self.handle_feedback()

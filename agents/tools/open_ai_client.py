@@ -11,7 +11,9 @@ class OpenAiClient:
         self.client = openai.OpenAI(api_key=api_key)
         self.ai_model = ai_model or self.OPENAI_MODELS_54
 
-    def __call_openai(self, prompt, system_prompt=[], tools=[]):
+    def __call_openai(self, prompt, system_prompt=[], toolset_name=""):
+        # get toolset by toolset_name
+        tools = FunctionCalling.toolset_new(toolset_name)
         messages = []
         for s_p in system_prompt:
             messages.append({"role": "system", "content": s_p})
@@ -21,7 +23,7 @@ class OpenAiClient:
         }]
         messages.append({"role": "user", "content": content_parts})
 
-        while True:
+        while True:  # add loop limitation
             ai_params = {
                 "model": self.ai_model,
                 "input": messages,
@@ -48,22 +50,23 @@ class OpenAiClient:
 
             # No function call → final answer
             if not function_calls:
-                return response
+                return response, ""
 
             # Handle ALL function calls in this round
             for function in function_calls:
                 tool_outputs.append({
                     "type": "function_call_output",
                     "call_id": function.call_id,
-                    "output": FunctionCalling.call(function)
+                    "output": FunctionCalling.call(function, toolset_name)
                 })
 
             # Append tool results and continue loop
             messages += assistant_messages
             messages += tool_outputs
+        return None,
 
-    def call(self, prompt, system_prompt=[]):
+    def call(self, prompt, system_prompt=[], toolset_name=""):
         """Call openai to get the response
         tool = [tool_1,tool_2]
         """
-        return self.__call_openai(prompt, system_prompt, FunctionCalling.toolset_new())
+        return self.__call_openai(prompt, system_prompt, toolset_name)
