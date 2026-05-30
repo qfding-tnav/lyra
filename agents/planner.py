@@ -2,7 +2,8 @@ import os
 import sys
 
 from github import Github, Auth
-from openai import OpenAI
+
+from tools.open_ai_client import OpenAiClient
 
 
 class Planner:
@@ -25,7 +26,7 @@ class Planner:
         self.gh = Github(auth=auth)
         self.repo = self.gh.get_repo(self.repo_name)
         self.issue = self.repo.get_issue(number=int(self.issue_number))
-        self.llm_client = OpenAI(api_key=self.llm_api_key)
+        self.llm_client = OpenAiClient(self.llm_api_key)
 
         # 3. Load Available Skills
         self.skills_context = self._load_skills()
@@ -88,16 +89,7 @@ class Planner:
             user_prompt += "Please generate the initial step-by-step implementation plan."
 
         print("Calling LLM to generate plan...")
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        ai_params = {
-            "model": "gpt-5.4",
-            "input": messages,
-            "stream": False
-        }
-        response = self.llm_client.responses.create(**ai_params)
+        response = self.llm_client.call(user_prompt, [system_prompt])
         return response.output_text.strip()
 
     def _get_previous_plan(self):
