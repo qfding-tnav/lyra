@@ -23,6 +23,25 @@ class Generator:
         self.issue = self.repo.get_issue(number=int(self.issue_number))
         self.llm_client = OpenAiClient(self.llm_api_key)
 
+        # Load Available Skills
+        self.skills_context = self._load_skills()
+
+        # A standard signature so the bot can easily find its own past comments
+        self.bot_signature = agent_constants.PLANNER_SIGNATURE
+
+    def _load_skills(self):
+        """Reads the skill file to understand the agent's capabilities."""
+        skills = ["artifacts.md"]
+        current_dir = os.path.dirname(__file__)
+        skills_path = os.path.join(current_dir, "skills", "artifacts.md")
+        try:
+            with open(skills_path, "r", encoding="utf-8") as f:
+                print(f"Successfully loaded skills from {skills_path}")
+                return f.read()
+        except FileNotFoundError:
+            print(f"Warning: Skills file not found at {skills_path}. Proceeding without skill context.")
+            return "No specific framework skills documented."
+
     def _get_approved_plan(self):
         """Scans the issue to find the final approved plan from the Planner Agent."""
         comments = list(self.issue.get_comments())
@@ -44,6 +63,9 @@ class Generator:
         system_prompt = (
             "You are an expert Autonomous Software Engineer (The Generator Agent). "
             "Your job is to execute the provided technical plan step-by-step. "
+            "### AVAILABLE FRAMEWORK SKILLS\n"
+            f"{self.skills_context}\n\n"
+            "### INSTRUCTIONS\n"
             "You must use your available tools (create_file, read_file) to write the actual code. "
             "When you have finished implementing all steps, return a final message summarizing what you built."
         )
