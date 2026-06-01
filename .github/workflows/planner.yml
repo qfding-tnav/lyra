@@ -2,13 +2,13 @@ name: Agent Planner
 
 on:
   issues:
-    types: [opened]
+    types: [ opened ]
   issue_comment:
     types: [ created ] # Wake up when a human replies with feedback or approval
 
 jobs:
   plan-tasks:
-    if: github.event.sender.type != 'Bot'
+    if: github.event.sender.type != 'Bot' && !contains(github.event.sender.login, 'github-actions')
     runs-on: ubuntu-latest
     # Explicitly grant permissions to modify the issue
     permissions:

@@ -7,6 +7,8 @@
 """
 import os
 
+from tools.utils import path_utils
+
 
 class ReadFile:
     """Tool Functions: read a file and return its content."""
@@ -33,9 +35,17 @@ class ReadFile:
     def process(self):
         print(f"function calling ReadFile {self.args}")
         """Reads the content of an existing file."""
-        safe_path = os.path.join("artifacts", self.filepath)
+        safe_path = path_utils.get_safe_path(self.filepath)
+
         if not os.path.exists(safe_path):
-            return f"Error: File {safe_path} does not exist."
+            return (f"Error: File '{self.filepath}' does not exist. "
+                    f"Try using list_directory to see what files are available.")
+
+        # NEW: Check if the AI accidentally passed a folder
+        if os.path.isdir(safe_path):
+            return (f"Error: '{self.filepath}' is a directory, not a file. "
+                    f"You cannot read a directory. Please use the 'list_directory' tool instead.")
+
         try:
             with open(safe_path, "r", encoding="utf-8") as f:
                 return f.read()

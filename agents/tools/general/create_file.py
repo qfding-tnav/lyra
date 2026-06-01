@@ -7,6 +7,8 @@
 """
 import os
 
+from tools.utils import path_utils
+
 
 class CreateFile:
     """Tool Functions: create_file"""
@@ -35,9 +37,8 @@ class CreateFile:
     def process(self):
         print(f"function calling CreateFile {self.args}")
         """Creates a file with the given content. Restricted to the artifacts/ directory."""
-        safe_path = os.path.join("artifacts", self.filepath)
+        safe_path = path_utils.get_safe_path(self.filepath)
         os.makedirs(os.path.dirname(safe_path), exist_ok=True)
-
         try:
             with open(safe_path, "w", encoding="utf-8") as f:
                 f.write(self.content)
