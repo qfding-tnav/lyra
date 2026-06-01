@@ -90,7 +90,7 @@ class Planner:
             user_prompt += "Please generate the initial step-by-step implementation plan."
 
         print("Calling LLM to generate plan...")
-        response = self.llm_client.call(user_prompt, [system_prompt])
+        response, msg = self.llm_client.call(user_prompt, [system_prompt])
         return response.output_text.strip()
 
     def _get_previous_plan(self):

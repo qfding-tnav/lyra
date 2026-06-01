@@ -63,7 +63,6 @@ class OpenAiClient:
             # Append tool results and continue loop
             messages += assistant_messages
             messages += tool_outputs
-        return None,
 
     def call(self, prompt, system_prompt=[], toolset_name=""):
         """Call openai to get the response
