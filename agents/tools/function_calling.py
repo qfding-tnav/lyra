@@ -2,9 +2,9 @@
 # coding=utf-8
 import json
 
-from .general.create_file import CreateFile
-from .general.read_file import ReadFile
-from ..constants import agent_constants
+from constants import agent_constants
+from tools.general.create_file import CreateFile
+from tools.general.read_file import ReadFile
 
 
 class FunctionCalling:
