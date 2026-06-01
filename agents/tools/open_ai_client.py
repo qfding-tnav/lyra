@@ -1,6 +1,6 @@
 import openai
 
-from tools.function_calling import FunctionCalling
+from .function_calling import FunctionCalling
 
 
 class OpenAiClient:

@@ -28,31 +28,19 @@ class CreateFile:
 
     def __init__(self, args={}):
         self.args = args
-        self.email = args.get("user_mail", "")
-        self.message = args.get("message", "")
+        self.filepath = args.get("filepath", "")
+        self.content = args.get("content", "")
 
     # must be defined
     def process(self):
-        print(f"function calling NotifyTeamsChat {self.args}")
-        payload = {
-            "user_id": self.email,
-            "message": self.message
-        }
-        msg, res = InstantMsg.send(payload)
-        if msg:
-            return "The Teams message was sent successfully."
-        else:
-            return "The Teams message failed to send."
-
-    def create_file(filepath: str, content: str) -> str:
+        print(f"function calling CreateFile {self.args}")
         """Creates a file with the given content. Restricted to the artifacts/ directory."""
-        # Security: Ensure we only write inside the artifacts directory
-        safe_path = os.path.join("artifacts", filepath)
+        safe_path = os.path.join("artifacts", self.filepath)
         os.makedirs(os.path.dirname(safe_path), exist_ok=True)
 
         try:
             with open(safe_path, "w", encoding="utf-8") as f:
-                f.write(content)
+                f.write(self.content)
             return f"Success: Created {safe_path}"
         except Exception as e:
             return f"Error creating file: {str(e)}"

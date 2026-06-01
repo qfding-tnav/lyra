@@ -25,33 +25,15 @@ class ReadFile:
         }
     }
 
-    def __init__(self):
-        """Initialization method of the class."""
-        pass
+    def __init__(self, args={}):
+        self.args = args
+        self.filepath = args.get("filepath", "")
 
-    def _protected_method(self):
-        """Protected method, starts with a single underscore."""
-        pass
-
-    def __private_method(self):
-        """Private method, starts with double underscores for name mangling."""
-        pass
-
-    def public_method(self, param1):
-        """
-        Description of the public method.
-        
-        Args:
-            param1 (type): Description of the parameter.
-            
-        Returns:
-            return_type: Description of the return value.
-        """
-        pass
-
-    def read_file(filepath: str) -> str:
+    # must be defined
+    def process(self):
+        print(f"function calling ReadFile {self.args}")
         """Reads the content of an existing file."""
-        safe_path = os.path.join("artifacts", filepath)
+        safe_path = os.path.join("artifacts", self.filepath)
         if not os.path.exists(safe_path):
             return f"Error: File {safe_path} does not exist."
         try:
