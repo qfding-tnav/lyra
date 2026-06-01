@@ -48,6 +48,11 @@ def test_invalid_numeric_input_raises_error(value):
         convert(value, "length", "meter", "kilometer")
 
 
+def test_negative_length_raises_error():
+    with pytest.raises(ConversionError):
+        convert(-1, "length", "meter", "kilometer")
+
+
 @pytest.mark.parametrize("value", [1e-12, 1e12])
 def test_very_small_and_large_values_are_supported(value):
     result = convert(value, "length", "meter", "kilometer")

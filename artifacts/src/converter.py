@@ -48,13 +48,11 @@ def get_categories() -> Dict[str, str]:
     return {key: category.name for key, category in UNIT_CATEGORIES.items()}
 
 
-
 def get_units(category: str) -> Dict[str, str]:
     unit_category = UNIT_CATEGORIES.get(category)
     if not unit_category:
         raise ConversionError(f"Unsupported category: {category}")
     return unit_category.labels
-
 
 
 def convert(value: float | int | str, category: str, from_unit: str, to_unit: str) -> float:
@@ -69,6 +67,9 @@ def convert(value: float | int | str, category: str, from_unit: str, to_unit: st
     unit_category = UNIT_CATEGORIES.get(category)
     if not unit_category:
         raise ConversionError(f"Unsupported category: {category}")
+
+    if numeric_value < 0 and category == "length":
+        raise ConversionError("Length cannot be negative")
 
     if from_unit not in unit_category.units:
         raise ConversionError(f"Unsupported source unit: {from_unit}")
