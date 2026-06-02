@@ -7,6 +7,7 @@ from artifacts.src.converter import (
     convert,
     format_value,
     get_categories,
+    get_category_label,
     get_units,
     parse_value,
 )
@@ -60,12 +61,57 @@ class ConverterTests(unittest.TestCase):
         with self.assertRaises(ConversionError):
             parse_value(float("inf"))
 
-    def test_negative_values_are_supported(self):
-        result = convert("area", -2.5, "square_meter", "square_foot")
-        self.assertLess(result, 0)
+    def test_nan_input_raises_error(self):
+        with self.assertRaises(ConversionError):
+            parse_value(float("nan"))
+
+    def test_negative_area_values_raise_error(self):
+        with self.assertRaisesRegex(
+            ConversionError, "Negative values are not allowed for category 'area'"
+        ):
+            convert("area", -2.5, "square_meter", "square_foot")
+
+    def test_negative_weight_values_raise_error(self):
+        with self.assertRaisesRegex(
+            ConversionError, "Negative values are not allowed for category 'weight'"
+        ):
+            convert("weight", -1, "gram", "kilogram")
+
+    def test_negative_length_values_raise_error(self):
+        with self.assertRaisesRegex(
+            ConversionError, "Negative values are not allowed for category 'length'"
+        ):
+            convert("length", -1, "meter", "kilometer")
 
     def test_format_value_handles_none(self):
         self.assertEqual(format_value(None), "")
+
+    def test_get_category_label_returns_label(self):
+        self.assertEqual(get_category_label("area"), "Area")
+
+    def test_get_category_label_unknown_category_raises_error(self):
+        with self.assertRaisesRegex(ConversionError, "Unknown category: volume"):
+            get_category_label("volume")
+
+    def test_get_units_unknown_category_raises_error(self):
+        with self.assertRaisesRegex(ConversionError, "Unknown category: volume"):
+            get_units("volume")
+
+    def test_convert_unknown_category_raises_error(self):
+        with self.assertRaisesRegex(ConversionError, "Unknown category: volume"):
+            convert("volume", 1, "liter", "gallon")
+
+    def test_convert_unknown_from_unit_raises_error(self):
+        with self.assertRaisesRegex(
+            ConversionError, "Unknown from-unit 'liter' for category 'area'"
+        ):
+            convert("area", 1, "liter", "square_meter")
+
+    def test_convert_unknown_to_unit_raises_error(self):
+        with self.assertRaisesRegex(
+            ConversionError, "Unknown to-unit 'liter' for category 'area'"
+        ):
+            convert("area", 1, "square_meter", "liter")
 
     def test_unit_converter_switches_to_area_and_resets(self):
         converter = UnitConverter()

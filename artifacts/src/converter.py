@@ -13,6 +13,15 @@ class Unit:
     category: str
 
 
+@dataclass(frozen=True)
+class CategoryConfig:
+    label: str
+    ordered_unit_keys: List[str]
+    default_from_unit: str
+    default_to_unit: str
+    allow_negative: bool = False
+
+
 UNITS: Dict[str, Dict[str, Unit]] = {
     "length": {
         "meter": Unit("meter", "Meter", "m", 1.0, "length"),
@@ -45,10 +54,53 @@ UNITS: Dict[str, Dict[str, Unit]] = {
 }
 
 
-CATEGORY_LABELS: Dict[str, str] = {
-    "length": "Length",
-    "weight": "Weight",
-    "area": "Area",
+CATEGORY_CONFIGS: Dict[str, CategoryConfig] = {
+    "length": CategoryConfig(
+        label="Length",
+        ordered_unit_keys=[
+            "meter",
+            "kilometer",
+            "centimeter",
+            "millimeter",
+            "foot",
+            "inch",
+            "yard",
+            "mile",
+        ],
+        default_from_unit="meter",
+        default_to_unit="kilometer",
+        allow_negative=False,
+    ),
+    "weight": CategoryConfig(
+        label="Weight",
+        ordered_unit_keys=[
+            "gram",
+            "kilogram",
+            "milligram",
+            "pound",
+            "ounce",
+        ],
+        default_from_unit="gram",
+        default_to_unit="kilogram",
+        allow_negative=False,
+    ),
+    "area": CategoryConfig(
+        label="Area",
+        ordered_unit_keys=[
+            "square_meter",
+            "square_kilometer",
+            "square_centimeter",
+            "square_millimeter",
+            "square_foot",
+            "square_inch",
+            "square_yard",
+            "acre",
+            "hectare",
+        ],
+        default_from_unit="square_meter",
+        default_to_unit="square_kilometer",
+        allow_negative=False,
+    ),
 }
 
 
@@ -56,18 +108,24 @@ class ConversionError(ValueError):
     pass
 
 
+def _get_category_config(category: str) -> CategoryConfig:
+    if category not in CATEGORY_CONFIGS or category not in UNITS:
+        raise ConversionError(f"Unknown category: {category}")
+    return CATEGORY_CONFIGS[category]
+
+
 def get_categories() -> List[str]:
-    return list(UNITS.keys())
+    return list(CATEGORY_CONFIGS.keys())
 
 
 def get_category_label(category: str) -> str:
-    return CATEGORY_LABELS[category]
+    return _get_category_config(category).label
 
 
 def get_units(category: str) -> List[Unit]:
-    if category not in UNITS:
-        raise ConversionError(f"Unknown category: {category}")
-    return list(UNITS[category].values())
+    config = _get_category_config(category)
+    category_units = UNITS[category]
+    return [category_units[unit_key] for unit_key in config.ordered_unit_keys]
 
 
 def parse_value(raw_value: str | int | float | None) -> float | None:
@@ -92,9 +150,13 @@ def convert(category: str, value: str | int | float | None, from_unit: str, to_u
     numeric_value = parse_value(value)
     if numeric_value is None:
         return None
-    if category not in UNITS:
-        raise ConversionError(f"Unknown category: {category}")
+
+    config = _get_category_config(category)
     category_units = UNITS[category]
+
+    if numeric_value < 0 and not config.allow_negative:
+        raise ConversionError(f"Negative values are not allowed for category '{category}'")
+
     if from_unit not in category_units:
         raise ConversionError(f"Unknown from-unit '{from_unit}' for category '{category}'")
     if to_unit not in category_units:
@@ -117,16 +179,14 @@ class UnitConverter:
     def __init__(self) -> None:
         self.category = "length"
         self.input_value = ""
-        self.from_unit = "meter"
-        self.to_unit = "kilometer"
+        self.from_unit = CATEGORY_CONFIGS["length"].default_from_unit
+        self.to_unit = CATEGORY_CONFIGS["length"].default_to_unit
 
     def set_category(self, category: str) -> None:
-        if category not in UNITS:
-            raise ConversionError(f"Unknown category: {category}")
+        config = _get_category_config(category)
         self.category = category
-        units = get_units(category)
-        self.from_unit = units[0].key
-        self.to_unit = units[1].key if len(units) > 1 else units[0].key
+        self.from_unit = config.default_from_unit
+        self.to_unit = config.default_to_unit
         self.input_value = ""
 
     def set_input(self, value: str) -> None:
