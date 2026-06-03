@@ -5,8 +5,7 @@ from github import Github, Auth
 
 from constants import agent_constants, section_constants, label_constants
 from tools.open_ai_client import OpenAiClient
-from tools.utils import skill_utils
-from utils import github_utils
+from tools.utils import skill_utils, github_utils
 
 
 class Planner:
