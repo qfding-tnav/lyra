@@ -68,8 +68,8 @@ class Evaluator:
             self.issue.create_comment(msg)
 
     def _handle_pass(self, summary):
-        self.issue.remove_from_labels("status:code-generated")
-        self.issue.add_to_labels("status:ready-for-review")
+        self.issue.remove_from_labels(label_constants.GENERATION_COMPLETE)
+        self.issue.add_to_labels(label_constants.READY_FOR_PR)
         self.issue.create_comment(
             f"✅ {agent_constants.EVALUATOR_SIGNATURE}: APPROVED**\n\nAll tests passed successfully.\n\n{summary}")
 

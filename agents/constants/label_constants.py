@@ -26,3 +26,4 @@ HEALING_COMPLETE = "status:healing-complete"
 # Workflow
 NEEDS_HUMAN_REVIEW = "status:needs-human-review"
 READY_FOR_MERGE = "status:ready-for-merge"
+READY_FOR_PR = "status:ready-for-pr"
