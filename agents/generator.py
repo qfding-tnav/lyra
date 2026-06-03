@@ -86,7 +86,7 @@ class Generator:
             comment_text = (
                 f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_COMPLETE}\n\n"
                 "I have finished writing the code based on the approved plan"
-                f"{is_evaluator_reject and " and the evaluator rejection error log." or "."}"
+                f"{is_evaluator_reject and 'and the evaluator rejection error log.' or '.'}"
                 f"Here is the summary:\n\n{final_summary}"
             )
             self.issue.create_comment(comment_text)
