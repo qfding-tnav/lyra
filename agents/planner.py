@@ -63,7 +63,7 @@ class Planner:
         comment_text = (
             f"{agent_constants.PLANNER_SIGNATURE} Initial {section_constants.PLAN_DRAFT}\n\n"
             f"{plan}\n\n"
-            "---\n*Reply to this comment with feedback to update the plan, "
+            f"---\n*Reply with `{section_constants.CMD_PLAN}` to update the plan, "
             f"or reply with `{section_constants.CMD_APPROVE}` to send it to the Generator Agent.*"
         )
         self.issue.create_comment(comment_text)
@@ -103,7 +103,7 @@ class Planner:
         comment_text = (
             f"{agent_constants.PLANNER_SIGNATURE} Updated {section_constants.PLAN_DRAFT}\n\n"
             f"{updated_plan}\n\n"
-            f"---\n*Reply with `{section_constants.CMD_PLAN}` to update plan, "
+            f"---\n*Reply with `{section_constants.CMD_PLAN}` to update the plan, "
             f"or reply with `{section_constants.CMD_APPROVE}` to begin coding.*"
         )
         self.issue.create_comment(comment_text)
