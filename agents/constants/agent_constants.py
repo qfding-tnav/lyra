@@ -17,3 +17,5 @@ PLANNER_SIGNATURE = "🤖 **Agent Planner:**"
 GENERATOR_SIGNATURE = "🤖 **Agent Generator:**"
 EVALUATOR_SIGNATURE = "🤖 **Agent Evaluator:**"
 HEALER_SIGNATURE = "🤖 **Agent Healer:**"
+
+AGENT_RETRY_LIMIT = 3

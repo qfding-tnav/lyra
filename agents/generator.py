@@ -28,17 +28,10 @@ class Generator:
 
     def execute(self):
         print(f"Starting Generator Agent for Issue #{self.issue_number}")
-
-        plan = github_utils.get_approved_plan(self.issue)
-        if not plan:
-            print("No plan found to execute. Exiting.")
-            return
-
         role_instructions = skill_utils.load_skills(["generator.md"])
         if not role_instructions:
             print("No role instructions found. Exiting.")
             return
-
         # Load Available Skills
         skills_context = skill_utils.load_skills(["artifacts.md"])
         if skills_context:
@@ -49,15 +42,53 @@ class Generator:
             f"{role_instructions}\n\n{skills_context}\n\n"
         )
 
-        user_prompt = f"Here is the plan to execute:\n\n{plan}"
+        # get current label
+        labels = self.issue.get_labels()
+        is_approved_plan = label_constants.PLAN_APPROVED in labels
+        is_evaluator_reject = label_constants.EVALUATION_FAILED in labels
+        print(labels)
+        if is_approved_plan:
+            """Get approved plan and generate code"""
+            plan = github_utils.get_approved_plan(self.issue)
+            if not plan:
+                print("No plan found to execute. Exiting.")
+                return
+            user_prompt = f"Here is the plan to execute:\n\n{plan}"
+        elif is_evaluator_reject:
+            # get loop limits
+            current_try_count = github_utils.get_evaluator_reject_number(self.issue)
+            if current_try_count > agent_constants.AGENT_RETRY_LIMIT:
+                print("Max retry limit reached. Exiting.")
+                self.issue.create_comment(
+                    f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_ERROR}\n\n"
+                    f"Max retry limit {agent_constants.AGENT_RETRY_LIMIT} reached. Exiting."
+                )
+                return
+            # Get latest evaluation reject information and generate code
+            error_info = github_utils.get_evaluator_reject_content(self.issue)
+            plan = github_utils.get_approved_plan(self.issue)
+            user_prompt = f"""### ORIGINAL PLAN (What the code SHOULD do)
+{plan}
+
+### Evaluator Reject Content:
+{error_info}\n\n"""
+        else:
+            user_prompt = ""
+
+        if not user_prompt:
+            print("user prompt not found. Exiting.")
+            return
 
         print("Entering autonomous coding loop...")
         response, msg = self.llm_client.call(user_prompt, [system_prompt], agent_constants.AGENT_GENERATOR)
         if response:
             final_summary = response.output_text.strip()
-            comment_text = (f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_COMPLETE}\n\n"
-                            f"I have finished writing the code based on the approved plan. "
-                            f"Here is the summary:\n\n{final_summary}")
+            comment_text = (
+                f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_COMPLETE}\n\n"
+                "I have finished writing the code based on the approved plan"
+                f"{is_evaluator_reject and " and the evaluator's rejection error log." or "."}"
+                f"Here is the summary:\n\n{final_summary}"
+            )
             self.issue.create_comment(comment_text)
             # Clean up trigger labels
             if label_constants.PLAN_APPROVED in [l.name for l in self.issue.labels]:

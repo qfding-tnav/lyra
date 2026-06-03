@@ -30,6 +30,33 @@ def get_approved_plan(issue):
     return ""
 
 
+def get_evaluator_reject_number(issue):
+    """Scans the issue to find the final approved plan from the Planner Agent."""
+    print("Retrieving evaluator reject number...")
+    reject_numbers = 0
+    comments = list(issue.get_comments())
+    for comment in reversed(comments):
+        if (agent_constants.EVALUATOR_SIGNATURE in comment.body and
+                section_constants.EVALUATOR_EXEC_COMPLETE in comment.body and
+                section_constants.TEST_REJECTED in comment.body
+        ):
+            reject_numbers += 1
+    return reject_numbers
+
+
+def get_evaluator_reject_content(issue):
+    """Scans the issue to find the final approved plan from the Planner Agent."""
+    print("Retrieving evaluator reject content...")
+    comments = list(issue.get_comments())
+    for comment in reversed(comments):
+        if (agent_constants.EVALUATOR_SIGNATURE in comment.body and
+                section_constants.EVALUATOR_EXEC_COMPLETE in comment.body and
+                section_constants.TEST_REJECTED in comment.body
+        ):
+            return comment.body
+    return ""
+
+
 def get_latest_generator_summary(issue):
     """Scans the issue to find the latest generator from the Generator Agent."""
     print("Retrieving latest generator summary...")
