@@ -31,10 +31,6 @@ class Planner:
         self.repo = self.gh.get_repo(self.repo_name)
         self.issue = self.repo.get_issue(number=int(self.issue_number))
         self.llm_client = OpenAiClient(self.llm_api_key)
-
-        # 3. Load Available Skills
-        self.skills_context = self._load_skills()
-
         # A standard signature so the bot can easily find its own past comments
         self.bot_signature = agent_constants.PLANNER_SIGNATURE
 
