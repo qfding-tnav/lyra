@@ -28,6 +28,7 @@ class Generator:
 
     def execute(self):
         print(f"Starting Generator Agent for Issue #{self.issue_number}")
+        current_try_count = 0
         role_instructions = skill_utils.load_skills(["generator.md"])
         if not role_instructions:
             print("No role instructions found. Exiting.")
@@ -84,7 +85,8 @@ class Generator:
         if response:
             final_summary = response.output_text.strip()
             comment_text = (
-                f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_COMPLETE}\n\n"
+                f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: "
+                f"{section_constants.GENERATOR_EXEC_COMPLETE}-{current_try_count + 1}\n\n"
                 "I have finished writing the code based on the approved plan"
                 f"{is_evaluator_reject and 'and the evaluator rejection error log.' or '.'}"
                 f"Here is the summary:\n\n{final_summary}"
