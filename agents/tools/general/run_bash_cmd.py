@@ -41,6 +41,7 @@ class RunBashCmd:
     # must be defined
     def process(self):
         """Executes a bash command inside the artifacts directory to run tests."""
+        print(f"function calling RunBashCmd {self.args}")
         # Security: Ensure we only run commands inside our sandbox
         working_dir = os.path.abspath(self.working_dir)
 
