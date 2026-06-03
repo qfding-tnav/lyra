@@ -1,70 +1,65 @@
 import os
 import sys
+
 from github import Github, Auth
-from openai import OpenAI
+
+from constants import agent_constants
+from tools.open_ai_client import OpenAiClient
+from tools.utils import github_utils, skill_utils
 
 
-def main():
-    token = os.getenv("GITHUB_TOKEN")
-    repo_name = os.getenv("REPO_NAME")
-    pr_number = os.getenv("PR_NUMBER")
-    api_key = os.getenv("LLM_API_KEY")
+class Evaluator:
+    def __init__(self):
+        # 1. Load Environment Variables
+        self.github_token = os.getenv("GITHUB_TOKEN")
+        self.llm_api_key = os.getenv("LLM_API_KEY")
+        self.repo_name = os.getenv("REPO_NAME")
+        self.issue_number = os.getenv("ISSUE_NUMBER")
 
-    if not all([token, repo_name, pr_number, api_key]):
-        print("Error: Missing required environment variables!")
-        sys.exit(1)
-    auth = Auth.Token(token)
-    gh = Github(auth=auth)
-    repo = gh.get_repo(repo_name)
-    pr = repo.get_pull(int(pr_number))
-    client = OpenAI(api_key=api_key)
+        if not all([self.github_token, self.llm_api_key, self.repo_name, self.issue_number]):
+            print("Error: Missing required environment variables.")
+            sys.exit(1)
+        auth = Auth.Token(self.github_token)
+        self.gh = Github(auth=auth)
+        self.repo = self.gh.get_repo(self.repo_name)
+        self.issue = self.repo.get_issue(number=int(self.issue_number))
+        self.llm_client = OpenAiClient(self.llm_api_key)
 
-    # 1. Extract the code changes (the Diff) from the PR
-    files = pr.get_files()
-    diff_text = ""
-    for file in files:
-        if file.patch:
-            diff_text += f"--- {file.filename}\n+++ {file.filename}\n{file.patch}\n\n"
+    def execute_evaluation(self):
+        print(f"Starting Evaluator Agent for Issue #{self.issue_number}")
+        approved_plan = github_utils.get_approved_plan(self.issue)
+        generator_summary = github_utils.get_latest_generator_summary(self.issue)
 
-    if not diff_text:
-        print("No code changes found in PR.")
-        sys.exit(0)
+        role_instructions = skill_utils.load_skills(["evaluator.md"])
+        if not role_instructions:
+            print("No role instructions found. Exiting.")
+            return
+        # Load Available Skills
+        skills_context = skill_utils.load_skills(["artifacts.md"])
+        if skills_context:
+            skills_context = f"### AVAILABLE FRAMEWORK SKILLS\n\n{skills_context}\n\n"
 
-    print(f"Evaluating PR #{pr_number}: {pr.title}")
+        system_prompt = f"""{role_instructions}\n\n{skills_context}\n\n"""
+        user_prompt = f"""
+### ORIGINAL PLAN (What the code SHOULD do)
+{approved_plan}
 
-    # 2. Ask the LLM to review the code
-    system_prompt = """You are a strict, expert Python Code Reviewer.
-    Review the provided Git diff for a length converter application.
-    Look for logical errors, missing edge cases (e.g., negative lengths), and syntax issues.
+### GENERATOR'S IMPLEMENTATION SUMMARY (What the code DOES)
+{generator_summary}
+"""
+        response, msg = self.llm_client.call(user_prompt, [system_prompt], agent_constants.AGENT_GENERATOR)
 
-    If the code is flawless, output EXACTLY the word: PASS
-    If the code has issues, output the word FAIL followed by a detailed explanation of what needs to be fixed.
-    Format: FAIL: <your specific feedback>
-    """
+    def _handle_pass(self, summary):
+        self.issue.remove_from_labels("status:code-generated")
+        self.issue.add_to_labels("status:ready-for-review")
+        self.issue.create_comment(f"✅ **Agent Evaluator: APPROVED**\n\nAll tests passed successfully.\n\n{summary}")
 
-    user_prompt = f"PR Title: {pr.title}\n\nCode Changes (Diff):\n{diff_text}"
-
-    response = client.chat.completions.create(
-        model="gpt-5.4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-    )
-
-    evaluation = response.choices[0].message.content.strip()
-
-    # 3. Take action based on the LLM's decision
-    if evaluation.startswith("PASS"):
-        print("✅ Code passed evaluation. Approving and Merging...")
-        pr.create_issue_comment("✅ **Evaluator Agent:** The code looks excellent. Merging automatically!")
-        pr.merge(merge_method='squash')
-    else:
-        print("❌ Code failed evaluation. Requesting changes...")
-        feedback = evaluation.replace("FAIL:", "").strip()
-        pr.create_issue_comment(
-            f"❌ **Evaluator Agent found issues:**\n\n{feedback}\n\n*Please fix these issues and push the changes.*")
+    def _handle_fail(self, summary):
+        self.issue.remove_from_labels("status:code-generated")
+        self.issue.add_to_labels("status:test-failed")
+        self.issue.create_comment(
+            f"❌ **Agent Evaluator: REJECTED**\n\nThe code failed the QA testing phase. Generator, please review the logs and fix the bugs.\n\n{summary}")
 
 
 if __name__ == "__main__":
-    main()
+    Evaluator().execute_evaluation()

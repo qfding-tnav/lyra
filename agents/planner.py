@@ -5,6 +5,7 @@ from github import Github, Auth
 
 from constants import agent_constants, section_constants, label_constants
 from tools.open_ai_client import OpenAiClient
+from tools.utils import skill_utils
 
 
 class Planner:
@@ -20,7 +21,9 @@ class Planner:
         self.event_name = os.getenv("EVENT_NAME", "issues")
         self.comment_body = os.getenv("COMMENT_BODY", "").strip()
 
-        self._validate_env_vars()
+        if not all([self.github_token, self.llm_api_key, self.repo_name, self.issue_number]):
+            print("Error: Missing required environment variables.")
+            sys.exit(1)
 
         # 2. Initialize Clients
         auth = Auth.Token(self.github_token)
@@ -35,48 +38,11 @@ class Planner:
         # A standard signature so the bot can easily find its own past comments
         self.bot_signature = agent_constants.PLANNER_SIGNATURE
 
-    def _validate_env_vars(self):
-        """Ensures all required environment variables are present."""
-        required_vars = {
-            "GITHUB_TOKEN": self.github_token,
-            "LLM_API_KEY": self.llm_api_key,
-            "REPO_NAME": self.repo_name,
-            "ISSUE_NUMBER": self.issue_number
-        }
-        missing = [k for k, v in required_vars.items() if not v]
-        if missing:
-            print(f"Error: Missing required environment variables: {', '.join(missing)}")
-            sys.exit(1)
-
-    def _load_skills(self):
-        """Reads the skill.md file to understand the agent's capabilities."""
-        # Assumes skill.md is located in agents/skills/skill.md
-        return ""
-        current_dir = os.path.dirname(__file__)
-        skills_path = os.path.join(current_dir, "skills", "skill.md")
-
-        try:
-            with open(skills_path, "r", encoding="utf-8") as f:
-                print(f"Successfully loaded skills from {skills_path}")
-                return f.read()
-        except FileNotFoundError:
-            print(f"Warning: Skills file not found at {skills_path}. Proceeding without skill context.")
-            return "No specific framework skills documented."
-
     def _generate_plan(self, issue_title, issue_body, feedback=None, previous_plan=None):
         """Core logic to communicate with the LLM and generate a Markdown plan."""
-        system_prompt = (
-            "You are an expert AI Software Architect and Planner. Your job is to take a user's "
-            "feature request and break it down into a clear, step-by-step technical implementation plan. "
-            "The plan should be ready for a Generator AI agent to execute.\n\n"
-            "### AVAILABLE FRAMEWORK SKILLS\n"
-            "The Generator agent has access to the following skills/tools:\n"
-            f"{self.skills_context}\n\n"
-            "### INSTRUCTIONS\n"
-            "Keep the above skills in mind. When outlining steps, explicitly mention which skills "
-            "the Generator should use for specific tasks if applicable. "
-            "Format your output in Markdown, using numbered lists for steps."
-        )
+        role_instructions = skill_utils.load_skills(["planner.md"])
+
+        system_prompt = f"{role_instructions}"
 
         user_prompt = f"Objective: {issue_title}\nDetails: {issue_body}\n\n"
 

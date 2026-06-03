@@ -6,6 +6,8 @@
 @Desc    :   list all constants variables for agents
 """
 
+AGENT_HANDLE = "@cyg"
+
 AGENT_PLANNER = "planner"
 AGENT_GENERATOR = "generator"
 AGENT_EVALUATOR = "evaluator"

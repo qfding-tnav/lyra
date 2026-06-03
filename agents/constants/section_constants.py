@@ -7,6 +7,7 @@
 """
 
 PLAN_DRAFT_HEADER = "**Plan Draft**"
+GENERATOR_EXEC_HEADER = "**Execution Complete**"
 
 CMD_APPROVE = "/approve"
 CMD_REJECT = "/reject"
