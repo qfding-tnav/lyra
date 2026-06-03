@@ -7,7 +7,10 @@
 """
 
 PLAN_DRAFT_HEADER = "**Plan Draft**"
-GENERATOR_EXEC_HEADER = "**Execution Complete**"
+GENERATOR_EXEC_HEADER = "**Generator Execution Complete**"
+EVALUATOR_EXEC_HEADER = "**Evaluator Execution Complete**"
+TEST_APPROVED = "TEST-APPROVED"
+TEST_REJECTED = "TEST-REJECTED"
 
 CMD_APPROVE = "/approve"
 CMD_REJECT = "/reject"

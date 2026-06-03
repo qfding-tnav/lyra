@@ -3,7 +3,7 @@ import sys
 
 from github import Github, Auth
 
-from constants import agent_constants
+from constants import agent_constants, label_constants, section_constants
 from tools.open_ai_client import OpenAiClient
 from tools.utils import github_utils, skill_utils
 
@@ -25,8 +25,11 @@ class Evaluator:
         self.issue = self.repo.get_issue(number=int(self.issue_number))
         self.llm_client = OpenAiClient(self.llm_api_key)
 
-    def execute_evaluation(self):
+    def execute(self):
         print(f"Starting Evaluator Agent for Issue #{self.issue_number}")
+        # Step 1> Generate test code
+        # Step 2> Run test
+        # Step 3> Analyze the test result
         approved_plan = github_utils.get_approved_plan(self.issue)
         generator_summary = github_utils.get_latest_generator_summary(self.issue)
 
@@ -48,18 +51,36 @@ class Evaluator:
 {generator_summary}
 """
         response, msg = self.llm_client.call(user_prompt, [system_prompt], agent_constants.AGENT_GENERATOR)
+        if response:
+            final_summary = response.output_text.strip()
+            # run test and analyze the test result
+            if section_constants.TEST_APPROVED in final_summary:
+                self._handle_pass(final_summary)
+            elif section_constants.TEST_REJECTED in final_summary:
+                self._handle_fail(final_summary)
+            else:
+                # Fallback if the AI forgets to use the exact keywords
+                self._handle_fail(
+                    f"⚠️ Evaluator did not explicitly approve the code. "
+                    f"Marking as failed.\n\n{final_summary}")
+        else:
+            print(msg)
+            self.issue.create_comment(msg)
 
     def _handle_pass(self, summary):
         self.issue.remove_from_labels("status:code-generated")
         self.issue.add_to_labels("status:ready-for-review")
-        self.issue.create_comment(f"✅ **Agent Evaluator: APPROVED**\n\nAll tests passed successfully.\n\n{summary}")
+        self.issue.create_comment(
+            f"✅ {agent_constants.EVALUATOR_SIGNATURE}: APPROVED**\n\nAll tests passed successfully.\n\n{summary}")
 
     def _handle_fail(self, summary):
-        self.issue.remove_from_labels("status:code-generated")
-        self.issue.add_to_labels("status:test-failed")
+        self.issue.remove_from_labels(label_constants.GENERATION_COMPLETE)
+        self.issue.add_to_labels(label_constants.EVALUATION_FAILED)
         self.issue.create_comment(
-            f"❌ **Agent Evaluator: REJECTED**\n\nThe code failed the QA testing phase. Generator, please review the logs and fix the bugs.\n\n{summary}")
+            f"❌ {agent_constants.EVALUATOR_SIGNATURE}: REJECTED**\n\n"
+            f"The code failed the QA testing phase. Generator, please review the logs and fix the bugs.\n\n{summary}")
 
 
 if __name__ == "__main__":
-    Evaluator().execute_evaluation()
+    agent = Evaluator()
+    agent.execute()

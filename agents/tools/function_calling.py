@@ -6,6 +6,7 @@ from constants import agent_constants
 from tools.general.create_file import CreateFile
 from tools.general.list_directory import ListDirectory
 from tools.general.read_file import ReadFile
+from tools.general.run_bash_cmd import RunBashCmd
 
 
 class FunctionCalling:
@@ -13,7 +14,8 @@ class FunctionCalling:
     FC_GENERATOR_SET = {
         "create_file": CreateFile,
         "read_file": ReadFile,
-        "list_directory": ListDirectory
+        "list_directory": ListDirectory,
+        "run_bash_cmd": RunBashCmd
     }
     FUNCTION_CALLING_SET = {
         agent_constants.AGENT_GENERATOR: FC_GENERATOR_SET
