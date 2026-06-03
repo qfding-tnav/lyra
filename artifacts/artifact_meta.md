@@ -13,7 +13,7 @@ when generating or modifying code.
 
 ## 1. Project Information
 
-* **Ecosystem:** Agentic Orchestration Framework
+* **Project Name:** unitConverter
 * **Target Language:** Python (Default)
 * **Objective:** Ensure all agent-driven file operations are strictly confined, correctly structured, and aligned with
   standard software development practices.
