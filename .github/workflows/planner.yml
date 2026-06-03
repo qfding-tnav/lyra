@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Use PAT during checkout so that the git push at the end has high privileges
+          token: ${{ secrets.AGENT_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
