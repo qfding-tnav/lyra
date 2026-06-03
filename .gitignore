@@ -1,0 +1,45 @@
+### Python ###
+*.pyc
+
+### Maven ###
+target/
+pom.xml.bak
+pom.xml.versionsBackup
+
+### IntelliJ IDEA ###
+**/.idea/**/*
+*.iws
+*.iml
+*.ipr
+!.idea/runConfigurations/*
+
+### Eclipse ###
+*.settings
+**/bin
+*.project
+*.classpath
+*.gitignore
+
+### Unit Test Case ###
+.junitcase*
+.temp*
+.coverage
+
+###Django###
+__pycache__
+db.sqlite3
+.pydevproject
+
+###SonarScan###
+.scannerwork
+
+###Library###
+Cygnus/lib/*
+
+###Service###
+.pid
+
+###ai####
+.noai
+
+venv
