@@ -1,5 +1,6 @@
 ### Python ###
-*.pyc
+__pycache__/
+*.py[cod]
 
 ### Maven ###
 target/
@@ -32,9 +33,6 @@ db.sqlite3
 
 ###SonarScan###
 .scannerwork
-
-###Library###
-Cygnus/lib/*
 
 ###Service###
 .pid
