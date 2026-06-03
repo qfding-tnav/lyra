@@ -42,7 +42,6 @@ inside the designated artifact folder:
 
 ```text
 artifacts/{project_name}/
-├── artifact_meta.md         # A copy of this metadata specific to the project
 ├── README.md                # Project-specific documentation
 ├── requirements.txt         # Project-specific dependencies
 ├── src/                     # Core application source code

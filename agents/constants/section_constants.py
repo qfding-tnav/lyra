@@ -12,6 +12,7 @@ EVALUATOR_EXEC_HEADER = "**Evaluator Execution Complete**"
 TEST_APPROVED = "TEST-APPROVED"
 TEST_REJECTED = "TEST-REJECTED"
 
+CMD_PLAN = "/plan"
 CMD_APPROVE = "/approve"
 CMD_REJECT = "/reject"
 CMD_USE_INPUT = "/use_input"
