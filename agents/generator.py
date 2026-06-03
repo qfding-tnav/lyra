@@ -58,7 +58,7 @@ class Generator:
         elif is_evaluator_reject:
             # get loop limits
             current_try_count = github_utils.get_evaluator_reject_number(self.issue)
-            if current_try_count > agent_constants.AGENT_RETRY_LIMIT:
+            if current_try_count >= agent_constants.AGENT_RETRY_LIMIT:
                 print("Max retry limit reached. Exiting.")
                 self.issue.create_comment(
                     f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_ERROR}\n\n"
