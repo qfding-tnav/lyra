@@ -103,7 +103,7 @@ class Planner:
         comment_text = (
             f"{agent_constants.PLANNER_SIGNATURE} Updated {section_constants.PLAN_DRAFT}\n\n"
             f"{updated_plan}\n\n"
-            "---\n*Reply with more feedback to update, "
+            f"---\n*Reply with `{section_constants.CMD_PLAN}` to update plan, "
             f"or reply with `{section_constants.CMD_APPROVE}` to begin coding.*"
         )
         self.issue.create_comment(comment_text)
