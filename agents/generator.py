@@ -43,7 +43,7 @@ class Generator:
         )
 
         # get current label
-        labels = self.issue.get_labels()
+        labels = [l.name for l in self.issue.labels]
         is_approved_plan = label_constants.PLAN_APPROVED in labels
         is_evaluator_reject = label_constants.EVALUATION_FAILED in labels
         print(labels)
