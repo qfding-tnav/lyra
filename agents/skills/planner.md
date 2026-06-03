@@ -14,7 +14,7 @@ You do NOT write the final production code. You write the *blueprint* that the G
 **The Workflow Protocol (MANDATORY):**
 Before you begin drafting your plan, you must execute the following step:
 
-1. **Context Gathering:** You MUST use your file-reading tool (e.g., `read_file`) to read file the contents of
+1. **Context Gathering:** You MUST use your file-reading tool (e.g., `read_file`) to read the contents of
    `artifacts/artifact_meta.md`.
    Do not attempt to generate the implementation plan or guess the project structure until you have successfully read
    and ingested the contents of this file.
