@@ -26,15 +26,6 @@ class Generator:
         # A standard signature so the bot can easily find its own past comments
         self.bot_signature = agent_constants.PLANNER_SIGNATURE
 
-    def _get_approved_plan(self):
-        """Scans the issue to find the final approved plan from the Planner Agent."""
-        comments = list(self.issue.get_comments())
-        for comment in reversed(comments):
-            if (agent_constants.PLANNER_SIGNATURE in comment.body and
-                    section_constants.PLAN_DRAFT_HEADER in comment.body):
-                return comment.body
-        return None
-
     def execute(self):
         print(f"Starting Generator Agent for Issue #{self.issue_number}")
 
@@ -64,7 +55,7 @@ class Generator:
         response, msg = self.llm_client.call(user_prompt, [system_prompt], agent_constants.AGENT_GENERATOR)
         if response:
             final_summary = response.output_text.strip()
-            comment_text = (f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_HEADER}\n\n"
+            comment_text = (f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_COMPLETE}\n\n"
                             f"I have finished writing the code based on the approved plan. "
                             f"Here is the summary:\n\n{final_summary}")
             self.issue.create_comment(comment_text)
@@ -73,11 +64,15 @@ class Generator:
                 self.issue.remove_from_labels(label_constants.PLAN_APPROVED)
             if label_constants.EVALUATION_FAILED in [l.name for l in self.issue.labels]:
                 self.issue.remove_from_labels(label_constants.EVALUATION_FAILED)
-
+            self.issue.add_to_labels(label_constants.GENERATION_COMPLETE)
             print("Posted completion comment to GitHub.")
         else:
-            print(msg)
-            self.issue.create_comment(msg)
+            comment_text = (
+                f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_ERROR}\n\n"
+                f"code generator failed. Here is the error message:\n{msg}"
+            )
+            print(comment_text)
+            self.issue.create_comment(comment_text)
 
 
 if __name__ == "__main__":

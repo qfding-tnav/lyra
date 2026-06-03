@@ -14,7 +14,7 @@ def get_previous_plan(issue):
     comments = list(issue.get_comments())
     for comment in reversed(comments):
         if (agent_constants.PLANNER_SIGNATURE in comment.body and
-                section_constants.PLAN_DRAFT_HEADER in comment.body):
+                section_constants.PLAN_DRAFT in comment.body):
             return comment.body
     return ""
 
@@ -25,7 +25,7 @@ def get_approved_plan(issue):
     comments = list(issue.get_comments())
     for comment in reversed(comments):
         if (agent_constants.PLANNER_SIGNATURE in comment.body and
-                section_constants.PLAN_DRAFT_HEADER in comment.body):
+                section_constants.PLAN_DRAFT in comment.body):
             return comment.body
     return ""
 
@@ -36,6 +36,6 @@ def get_latest_generator_summary(issue):
     comments = list(issue.get_comments())
     for comment in reversed(comments):
         if (agent_constants.GENERATOR_SIGNATURE in comment.body and
-                section_constants.GENERATOR_EXEC_HEADER in comment.body):
+                section_constants.GENERATOR_EXEC_COMPLETE in comment.body):
             return comment.body
     return ""

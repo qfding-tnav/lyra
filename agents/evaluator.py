@@ -71,13 +71,14 @@ class Evaluator:
         self.issue.remove_from_labels(label_constants.GENERATION_COMPLETE)
         self.issue.add_to_labels(label_constants.READY_FOR_PR)
         self.issue.create_comment(
-            f"✅ {agent_constants.EVALUATOR_SIGNATURE}: APPROVED**\n\nAll tests passed successfully.\n\n{summary}")
+            f"{agent_constants.EVALUATOR_SIGNATURE}: {section_constants.EVALUATOR_EXEC_COMPLETE}: ✅ APPROVED\n\n"
+            f"All tests passed successfully.\n\n{summary}")
 
     def _handle_fail(self, summary):
         self.issue.remove_from_labels(label_constants.GENERATION_COMPLETE)
         self.issue.add_to_labels(label_constants.EVALUATION_FAILED)
         self.issue.create_comment(
-            f"❌ {agent_constants.EVALUATOR_SIGNATURE}: REJECTED**\n\n"
+            f"{agent_constants.EVALUATOR_SIGNATURE}: {section_constants.EVALUATOR_EXEC_COMPLETE}: ❌ REJECTED\n\n"
             f"The code failed the QA testing phase. Generator, please review the logs and fix the bugs.\n\n{summary}")
 
 

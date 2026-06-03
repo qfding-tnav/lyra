@@ -6,9 +6,11 @@
 @Desc    :   list all constants variables for section
 """
 
-PLAN_DRAFT_HEADER = "**Plan Draft**"
-GENERATOR_EXEC_HEADER = "**Generator Execution Complete**"
-EVALUATOR_EXEC_HEADER = "**Evaluator Execution Complete**"
+PLAN_DRAFT = "**Plan Draft**"
+GENERATOR_EXEC_COMPLETE = "**Generator Execution Complete**"
+GENERATOR_EXEC_ERROR = "**Generator Execution Error**"
+EVALUATOR_EXEC_COMPLETE = "**Evaluator Execution Complete**"
+EVALUATOR_EXEC_ERROR = "**Evaluator Execution Error**"
 TEST_APPROVED = "TEST-APPROVED"
 TEST_REJECTED = "TEST-REJECTED"
 

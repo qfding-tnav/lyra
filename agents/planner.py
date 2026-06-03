@@ -32,8 +32,6 @@ class Planner:
         self.repo = self.gh.get_repo(self.repo_name)
         self.issue = self.repo.get_issue(number=int(self.issue_number))
         self.llm_client = OpenAiClient(self.llm_api_key)
-        # A standard signature so the bot can easily find its own past comments
-        self.bot_signature = agent_constants.PLANNER_SIGNATURE
 
     def _generate_plan(self, issue_title, issue_body, feedback=None, previous_plan=None):
         """Core logic to communicate with the LLM and generate a Markdown plan."""
@@ -63,7 +61,7 @@ class Planner:
         plan = self._generate_plan(self.issue.title, self.issue.body)
 
         comment_text = (
-            f"{self.bot_signature} Initial {section_constants.PLAN_DRAFT_HEADER}\n\n"
+            f"{agent_constants.PLANNER_SIGNATURE} Initial {section_constants.PLAN_DRAFT}\n\n"
             f"{plan}\n\n"
             "---\n*Reply to this comment with feedback to update the plan, "
             f"or reply with `{section_constants.CMD_APPROVE}` to send it to the Generator Agent.*"
@@ -95,7 +93,7 @@ class Planner:
         )
 
         comment_text = (
-            f"{self.bot_signature} Updated {section_constants.PLAN_DRAFT_HEADER}\n\n"
+            f"{agent_constants.PLANNER_SIGNATURE} Updated {section_constants.PLAN_DRAFT}\n\n"
             f"{updated_plan}\n\n"
             "---\n*Reply with more feedback to update, "
             f"or reply with `{section_constants.CMD_APPROVE}` to begin coding.*"
