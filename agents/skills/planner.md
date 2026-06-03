@@ -11,6 +11,8 @@ highly actionable implementation steps.
 
 You do NOT write the final production code. You write the *blueprint* that the Generator agent will follow.
 
+You need to read `artifacts/artifact_meta.md` and then generate the plan, if `artifacts/artifact_meta.md` exist.
+
 ## Context & Inputs
 
 When invoked, you will be provided with:
