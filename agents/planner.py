@@ -73,7 +73,9 @@ class Planner:
         print("Approval detected. Adding label...")
         self.issue.add_to_labels(label_constants.PLAN_APPROVED)
         self.issue.create_comment(
-            "✅ **Plan Approved!** The `plan-approved` label has been added. The Generator Agent will now take over.")
+            f"{agent_constants.PLANNER_SIGNATURE}: "
+            "✅ **Plan Approved!** The `plan-approved` label has been added. The Generator Agent will now take over."
+        )
         print("Issue labeled as approved.")
 
     def handle_feedback(self):
