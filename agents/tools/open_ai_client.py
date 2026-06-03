@@ -6,6 +6,7 @@ from tools.function_calling import FunctionCalling
 class OpenAiClient:
     """llm Client"""
     OPENAI_MODELS_54 = "gpt-5.4"
+    MAX_RETRIES = 15
 
     def __init__(self, api_key, ai_model=""):
         self.client = openai.OpenAI(api_key=api_key)
@@ -22,8 +23,8 @@ class OpenAiClient:
             "text": str(prompt)
         }]
         messages.append({"role": "user", "content": content_parts})
-
-        while True:  # add loop limitation
+        count = 0
+        while count < self.MAX_RETRIES:  # add loop limitation
             ai_params = {
                 "model": self.ai_model,
                 "input": messages,
@@ -63,6 +64,8 @@ class OpenAiClient:
             # Append tool results and continue loop
             messages += assistant_messages
             messages += tool_outputs
+            count += 1
+        return None, f"Max retry ({self.MAX_RETRIES}) reached!!!"
 
     def call(self, prompt, system_prompt=[], toolset_name=""):
         """Call openai to get the response

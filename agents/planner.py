@@ -15,6 +15,7 @@ class Planner:
         """Initializes the Planner Agent, loading configuration, clients, and skills."""
         # 1. Load Environment Variables
         self.github_token = os.getenv("GITHUB_TOKEN")
+        self.github_token_pat = os.getenv("GITHUB_TOKEN_PAT")
         self.llm_api_key = os.getenv("LLM_API_KEY")
         self.repo_name = os.getenv("REPO_NAME")
         self.issue_number = os.getenv("ISSUE_NUMBER")
@@ -71,8 +72,14 @@ class Planner:
     def handle_approval(self):
         """Handles the human trigger to approve the plan and hand off to the Generator."""
         print("Approval detected. Adding label...")
-        self.issue.add_to_labels(label_constants.PLAN_APPROVED)
-        self.issue.create_comment(
+        # use PAT token to trigger next step automatically.
+        auth = Auth.Token(self.github_token_pat)
+        gh = Github(auth=auth)
+        repo = gh.get_repo(self.repo_name)
+        issue = repo.get_issue(number=int(self.issue_number))
+
+        issue.add_to_labels(label_constants.PLAN_APPROVED)
+        issue.create_comment(
             f"{agent_constants.PLANNER_SIGNATURE}: "
             "✅ **Plan Approved!** The `plan-approved` label has been added. The Generator Agent will now take over."
         )
