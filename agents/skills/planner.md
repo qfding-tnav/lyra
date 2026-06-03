@@ -11,7 +11,7 @@ highly actionable implementation steps.
 
 You do NOT write the final production code. You write the *blueprint* that the Generator agent will follow.
 
-You need to read `artifacts/artifact_meta.md` before generating the plan.
+You need to read `artifacts/artifact_meta.md` to get project information before generating the plan.
 
 ## Context & Inputs
 
