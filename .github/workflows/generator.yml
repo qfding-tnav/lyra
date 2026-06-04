@@ -61,5 +61,8 @@ jobs:
           git add artifacts/
           git commit -m "feat: agent generated code for issue #${{ github.event.issue.number }}" || echo "No changes to commit"
           
+          # Pull with rebase to sync the remote history BEFORE pushing
+          git pull --rebase origin $BRANCH_NAME || echo "Branch doesn't exist on remote yet, skipping pull."
+          
           # Push to the repo
           git push -u origin $BRANCH_NAME
