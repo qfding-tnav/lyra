@@ -1,0 +1,41 @@
+name: Agent Test Generator
+
+on:
+  issues:
+    types: [ opened ]
+  issue_comment:
+    types: [ created ] # Wake up when a human replies with feedback or approval
+
+jobs:
+  plan-tasks:
+    if: github.event.label.name == 'status:generation-complete'
+    runs-on: ubuntu-latest
+    # Explicitly grant permissions to modify the issue
+    permissions:
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Use PAT during checkout so that the git push at the end has high privileges
+          token: ${{ secrets.AGENT_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Planner Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN_PAT: ${{ secrets.AGENT_PAT}}
+          LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO_NAME: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: python agents/planner.py

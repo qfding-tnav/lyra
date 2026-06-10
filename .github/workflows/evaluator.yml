@@ -7,7 +7,7 @@ on:
 jobs:
   evaluate-code:
     # Wake up as soon as the Generator finishes its work
-    if: github.event.label.name == 'status:generation-complete'
+    if: github.event.label.name == 'status:test-runner-complete'
     runs-on: ubuntu-latest
     
     # Needs permissions to update the issue and push test code
