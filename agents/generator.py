@@ -47,7 +47,6 @@ class Generator:
         labels = [l.name for l in self.issue.labels]
         is_approved_plan = label_constants.PLAN_APPROVED in labels
         is_evaluator_reject = label_constants.EVALUATION_FAILED in labels
-        print(labels)
         if is_approved_plan:
             """Get approved plan and generate code"""
             plan = github_utils.get_approved_plan(self.issue)

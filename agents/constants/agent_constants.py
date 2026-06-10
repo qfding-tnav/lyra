@@ -15,6 +15,8 @@ AGENT_HEALER = "healer"
 
 PLANNER_SIGNATURE = "🤖 **Agent Planner:**"
 GENERATOR_SIGNATURE = "🤖 **Agent Generator:**"
+TEST_GENERATOR_SIGNATURE = "🤖 **Agent Test Generator:**"
+TEST_RUNNER_SIGNATURE = "🤖 **Agent Test Runner:**"
 EVALUATOR_SIGNATURE = "🤖 **Agent Evaluator:**"
 HEALER_SIGNATURE = "🤖 **Agent Healer:**"
 

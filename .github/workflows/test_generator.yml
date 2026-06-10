@@ -20,6 +20,7 @@ jobs:
         with:
           # Use PAT during checkout so that the git push at the end has high privileges
           token: ${{ secrets.AGENT_PAT }}
+          ref: feature/agent-task-${{ github.event.issue.number }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,11 +44,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Stage all files created by the Evaluator inside this specific issue's sandbox
+          # Stage all files created by the Test Generator inside this specific issue's sandbox
           git add artifacts/
 
           # Commit only if there are new files to commit, otherwise silently pass
-          git commit -m "test: auto-generated unit tests by Evaluator Agent for Issue #${{ github.event.issue.number }}" || echo "No changes to commit"
+          git commit -m "test: auto-generated unit tests by Test Generator Agent for Issue #${{ github.event.issue.number }}" || echo "No changes to commit"
 
           # Push explicitly to the feature branch to guarantee it lands in the right place
           git push origin feature/agent-task-${{ github.event.issue.number }}
