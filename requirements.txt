@@ -1,3 +1,67 @@
-openai
+#
+####### example-requirements.txt #######
+#
+###### Requirements without Version Specifiers ######
+#nose
+#nose-cov
+#beautifulsoup4
+
+###### Requirements with Version Specifiers ######
+#   See https://www.python.org/dev/peps/pep-0440/#version-specifiers
+#docopt == 0.6.1             # Version Matching. Must be version 0.6.1
+#keyring >= 4.1.1            # Minimum version 4.1.1
+#coverage != 3.5             # Version Exclusion. Anything except version 3.5
+#Mopidy-Dirble ~= 1.1        # Compatible release. Same as >= 1.1, == 1.*
+
+###### Refer to other requirements files ######
+#-r other-requirements.txt
+#
+
+###### A particular file ######
+#./downloads/numpy-1.9.2-cp34-none-win32.whl
+#http://wxpython.org/Phoenix/snapshot-builds/wxPython_Phoenix-3.0.3.dev1820+49a8884-cp34-none-win_amd64.whl
+
+###### Additional Requirements without Version Specifiers ######
+#   Same as 1st section, just here to show that you can put things in any order.
+#rejected
+#green
+#
+
+BeautifulSoup4 ~= 4.12.3
+boto3 ~= 1.34.93
+coverage ~= 7.5.0
+django ~= 5.0.4
+django_markup ~= 1.8.1
+djangorestframework ~= 3.16.1
+jenkins ~= 1.0.2
+lxml ~= 5.2.1
+markdown ~= 3.6
+psycopg2 ~= 2.9.9
+paramiko ~= 3.4.0
+python-jenkins ~= 1.8.2
+xlrd == 1.2.0
+jira ~= 3.8.0
+
+bleach ~= 6.1.0
+bleach-whitelist ~= 0.0.11
+ldap3 ~= 2.9.1
+uWSGI ~= 2.0.25
+requests ~= 2.31.0
+Deprecated ~= 1.2.14
+selenium ~= 4.20.0
+timeout_decorator ~= 0.5.0
+fabric ~= 3.2.2
+openpyxl ~= 3.1.2
+pytz ~= 2024.1
+humanize ~= 4.9.0
+daemonize ~= 2.5.0
+openai ~= 1.70.0
+numpy ~= 2.3.0
+pgvector ~= 0.4.1
+tiktoken ~= 0.11.0
+langchain ~= 0.3.27
+langchain-core ~= 0.3.76
+langchain-text-splitters ~= 0.3.11
+markdownify ~= 1.2.2
 PyGithub
 pytest
