@@ -46,7 +46,7 @@ outside of the JSON block.
 
 ```json
 {
-  "status": "failed", 
+  "status": "failed",
   "root_cause": "implementation",
   "confidence": 0.95,
   "recommended_action": "regenerate_implementation",
@@ -60,3 +60,4 @@ outside of the JSON block.
     }
   ]
 }
+```
