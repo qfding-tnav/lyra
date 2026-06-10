@@ -103,9 +103,10 @@ jobs:
         env:
           DB_HOST: db
           DB_PORT: "5432"
-          # The map-data bucket (s3://tnavmapdata) allows anonymous listing, so
-          # the S3 check passes without secrets. These are optional overrides in
-          # case the bucket policy ever changes.
+          # The map-data bucket (s3://tnavmapdata) only allows anonymous listing
+          # from corporate source IPs, so on GitHub-hosted runners the S3 check
+          # is SKIPPED until these secrets are configured — then it becomes a
+          # real credentialed check automatically.
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
