@@ -4,7 +4,7 @@ name: Build agent-runner image
 # a live PostGIS service. The smoke test doubles as a "requirements.txt completeness"
 # detector: if the app's import closure is missing a package, the test won't even
 # reach "Ran N tests" and this workflow fails — telling you exactly what to add to
-# artifacts/requirements.txt.
+# requirements.txt.
 on:
   push:
     branches: [main]

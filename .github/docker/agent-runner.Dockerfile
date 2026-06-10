@@ -45,9 +45,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && rm -rf /var/lib/apt/lists/*
 
 # --- App dependencies ------------------------------------------------------
-# artifacts/requirements.txt is the single source of truth for app deps.
+# requirements.txt is the single source of truth for app deps.
 # If a test reveals a missing import, add the package THERE (not here).
-COPY artifacts/requirements.txt /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 WORKDIR /workspace
