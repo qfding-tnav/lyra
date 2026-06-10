@@ -57,7 +57,7 @@ class Generator:
             user_prompt = f"Here is the plan to execute:\n\n{plan}"
         elif is_evaluator_reject:
             # get loop limits
-            current_try_count = github_utils.get_evaluator_reject_number(self.issue)
+            current_try_count = github_utils.get_evaluator_reject_number_after_approved(self.issue)
             if current_try_count >= agent_constants.AGENT_RETRY_LIMIT:
                 print("Max retry limit reached. Exiting.")
                 self.issue.create_comment(

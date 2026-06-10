@@ -26,7 +26,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -37,22 +37,9 @@ jobs:
         env:
           # MUST use the PAT here so that if the Evaluator applies the "status:test-failed" label, 
           # GitHub Actions will recognize it and wake the Generator back up!
-          GITHUB_TOKEN: ${{ secrets.AGENT_PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN_PAT: ${{ secrets.AGENT_PAT}}
           LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
         run: python agents/evaluator.py
-
-      - name: Commit and Push Test Files
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Stage all files created by the Evaluator inside this specific issue's sandbox
-          git add artifacts/
-          
-          # Commit only if there are new files to commit, otherwise silently pass
-          git commit -m "test: auto-generated unit tests by Evaluator Agent for Issue #${{ github.event.issue.number }}" || echo "No changes to commit"
-          
-          # Push explicitly to the feature branch to guarantee it lands in the right place
-          git push origin feature/agent-task-${{ github.event.issue.number }}

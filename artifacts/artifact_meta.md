@@ -50,6 +50,7 @@ artifacts/{project_name}/
 ├── tests/                   # Isolated test suite
 │   ├── __init__.py
 │   └── test_main.py
+├── tests_report/             # Store all test result.
 └── docs/                    # Additional generated documentation
 ```
 
