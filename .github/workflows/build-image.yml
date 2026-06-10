@@ -11,7 +11,7 @@ on:
     paths:
       - '.github/docker/agent-runner.Dockerfile'
       - '.github/docker/db.Dockerfile'
-      - 'artifacts/requirements.txt'
+      - 'requirements.txt'
       - '.github/workflows/build-image.yml'
   workflow_dispatch:
 
@@ -20,8 +20,8 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/xiaohai-idris/cygnus-agent-runner
-  DB_IMAGE: ghcr.io/xiaohai-idris/cygnus-test-db
+  IMAGE: ghcr.io/${{ github.repository_owner }}/cygnus-agent-runner
+  DB_IMAGE: ghcr.io/${{ github.repository_owner }}/cygnus-test-db
 
 jobs:
   build:
@@ -68,7 +68,7 @@ jobs:
     needs: [build, build-db]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/xiaohai-idris/cygnus-agent-runner:latest
+      image: ghcr.io/${{ github.repository_owner }}/cygnus-agent-runner:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +76,7 @@ jobs:
       db:
         # postgis + pgvector, so the full migration set (incl. ai_embedding's
         # CREATE EXTENSION vector) builds the test DB cleanly.
-        image: ghcr.io/xiaohai-idris/cygnus-test-db:latest
+        image: ghcr.io/${{ github.repository_owner }}/cygnus-test-db:latest
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
