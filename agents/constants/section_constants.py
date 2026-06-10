@@ -7,6 +7,7 @@
 """
 
 PLAN_DRAFT = "**Plan Draft**"
+PLAN_APPROVED = "**Plan Approved**"
 GENERATOR_EXEC_COMPLETE = "**Generator Execution Complete**"
 GENERATOR_EXEC_ERROR = "**Generator Execution Error**"
 EVALUATOR_EXEC_COMPLETE = "**Evaluator Execution Complete**"

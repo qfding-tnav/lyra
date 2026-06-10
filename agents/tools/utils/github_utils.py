@@ -31,11 +31,28 @@ def get_approved_plan(issue):
 
 
 def get_evaluator_reject_number(issue):
-    """Scans the issue to find the final approved plan from the Planner Agent."""
+    """Scans the issue to find total evaluator reject number"""
     print("Retrieving evaluator reject number...")
     reject_numbers = 0
     comments = list(issue.get_comments())
     for comment in reversed(comments):
+        if (agent_constants.EVALUATOR_SIGNATURE in comment.body and
+                section_constants.EVALUATOR_EXEC_COMPLETE in comment.body and
+                section_constants.TEST_REJECTED in comment.body
+        ):
+            reject_numbers += 1
+    return reject_numbers
+
+
+def get_evaluator_reject_number_after_approved(issue):
+    """Scans the issue to find evaluator reject number after approved."""
+    print("Retrieving evaluator reject number after approved...")
+    reject_numbers = 0
+    comments = list(issue.get_comments())
+    for comment in reversed(comments):
+        if (agent_constants.PLANNER_SIGNATURE in comment.body and
+                section_constants.PLAN_APPROVED in comment.body):
+            return reject_numbers
         if (agent_constants.EVALUATOR_SIGNATURE in comment.body and
                 section_constants.EVALUATOR_EXEC_COMPLETE in comment.body and
                 section_constants.TEST_REJECTED in comment.body
