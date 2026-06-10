@@ -6,6 +6,11 @@ Verifies the FOUR pillars the runtime needs, against the live db service:
   3. PostGIS     — CREATE EXTENSION postgis + a real spatial query (ST_Distance)
   4. pgvector    — CREATE EXTENSION vector + a vector column / <-> distance query
   5. AWS         — aws CLI v2 present + boto3 importable and able to build a client
+  6. Reachability— s3://tnavmapdata/latest_builds_test/ is listable (the bucket
+                   allows anonymous listing, so no credentials are required;
+                   AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY are used when set),
+                   and the FlexNet license portal answers over HTTPS from
+                   inside the container
 
 No app code is required: this script is self-contained, so it works even though
 the Cygnus application itself does not live in this repository.
@@ -19,12 +24,20 @@ import subprocess
 import sys
 
 failures = []
+skips = []
+
+
+class Skip(Exception):
+    """Raise inside a check to mark it skipped (not failed)."""
 
 
 def check(name, fn):
     try:
         detail = fn()
         print(f"  OK  {name}" + (f" — {detail}" if detail else ""))
+    except Skip as e:
+        skips.append(name)
+        print(f"SKIP  {name}: {e}")
     except Exception as e:  # noqa: BLE001 — report and keep going
         failures.append(name)
         print(f"FAIL  {name}: {type(e).__name__}: {e}")
@@ -173,7 +186,67 @@ def aws_boto3():
 check("AWS boto3", aws_boto3)
 
 
+# --- 6. External reachability: map-data S3 bucket + FlexNet portal -------------
+def s3_map_bucket():
+    import boto3
+    from botocore import UNSIGNED
+    from botocore.config import Config
+    from botocore.exceptions import ClientError
+
+    bucket, prefix = "tnavmapdata", "latest_builds_test/"
+    has_creds = bool(os.environ.get("AWS_ACCESS_KEY_ID"))
+    # The bucket lives in us-west-2 and allows anonymous listing, so this check
+    # passes without secrets. Credentials are used when configured; a custom
+    # endpoint can be supplied via AWS_ENDPOINT_URL, and botocore honors the
+    # standard https_proxy env var.
+    endpoint = os.environ.get("AWS_ENDPOINT_URL") or None
+    region = os.environ.get("AWS_DEFAULT_REGION", "us-west-2")
+    if has_creds:
+        s3 = boto3.client("s3", region_name=region, endpoint_url=endpoint)
+    else:
+        # No secrets configured — try anonymous access in case the bucket is public.
+        s3 = boto3.client(
+            "s3",
+            region_name=region,
+            endpoint_url=endpoint,
+            config=Config(signature_version=UNSIGNED),
+        )
+    try:
+        resp = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=5)
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        raise RuntimeError(
+            f"{code}: s3://{bucket}/{prefix} not accessible — the bucket allowed "
+            "anonymous listing when this check was written; if the policy changed, "
+            "configure AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY repo secrets"
+        )
+    n = resp.get("KeyCount", 0)
+    if n == 0:
+        raise RuntimeError(f"s3://{bucket}/{prefix} is listable but EMPTY")
+    mode = "credentialed" if has_creds else "anonymous"
+    via = f" via {endpoint}" if endpoint else ""
+    return f"s3://{bucket}/{prefix} listable ({mode}{via}), {n} key(s) sampled"
+
+
+check("S3 map-data bucket (latest_builds_test/)", s3_map_bucket)
+
+
+def flexnet_portal():
+    import requests
+
+    url = "https://here.flexnetoperations.com/control/navt/login"
+    # Any HTTP response (even 4xx from a WAF) proves DNS/TLS/egress all work;
+    # only connection errors / timeouts mean the portal is unreachable.
+    r = requests.get(url, timeout=30, allow_redirects=True)
+    return f"HTTP {r.status_code} from {url}"
+
+
+check("FlexNet license portal reachable", flexnet_portal)
+
+
 # ------------------------------------------------------------------------------
+if skips:
+    print(f"\nSKIPPED: {len(skips)} check(s): {', '.join(skips)}")
 if failures:
     print(f"\nFAILED: {len(failures)} check(s): {', '.join(failures)}")
     sys.exit(1)
