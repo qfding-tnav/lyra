@@ -1,10 +1,12 @@
 name: Build agent-runner image
 
-# Builds and pushes the PGE agent-runner image to GHCR, then smoke-tests it against
-# a live PostGIS service. The smoke test doubles as a "requirements.txt completeness"
-# detector: if the app's import closure is missing a package, the test won't even
-# reach "Ran N tests" and this workflow fails — telling you exactly what to add to
-# requirements.txt.
+# Builds and pushes the PGE agent-runner image to GHCR, then smoke-tests the
+# ENVIRONMENT against a live PostGIS+pgvector service: Django (postgis backend +
+# migrate), GIS system libs (GDAL/GEOS), PostGIS spatial queries, pgvector
+# (extension + python pkg), and AWS tooling (CLI v2 + boto3). No app code needed —
+# the check script is self-contained (.github/scripts/smoke_env.py). It also
+# doubles as a requirements.txt completeness detector: a missing package fails
+# the corresponding import check loudly.
 on:
   push:
     branches: [main]
@@ -13,6 +15,7 @@ on:
       - '.github/docker/db.Dockerfile'
       - 'requirements.txt'
       - '.github/workflows/build-image.yml'
+      - '.github/scripts/smoke_env.py'
   workflow_dispatch:
 
 permissions:
@@ -92,44 +95,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Run a sample test module against PostGIS
-        # We only assert the environment WORKS (deps import, GIS loads, test DB builds,
-        # tests execute) — NOT that every assertion passes, since the snapshot ships
-        # some pre-existing failing tests. "Ran N tests" in the output == env is good.
-        run: |
-          set -uo pipefail
-          {
-            echo "from config.settings import *  # noqa: F401,F403"
-            echo "DATABASES['default']['HOST'] = 'db'"
-            echo "DATABASES['default']['PORT'] = '5432'"
-            echo "DATABASES['default']['USER'] = 'postgres'"
-            echo "DATABASES['default']['PASSWORD'] = 'postgres'"
-            echo "DATABASES['default']['NAME'] = 'cygnus_test'"
-            echo "DATABASES['default'].setdefault('TEST', {})['NAME'] = 'cygnus_test'"
-          } > "$RUNNER_TEMP/ci_settings.py"
-
-          # Stage the in-repo libs onto sys.path (settings.py adds Cygnus/lib). Cygnus/lib
-          # is gitignored, so this mirrors run_test.sh without touching the tree.
-          mkdir -p artifacts/Cygnus/lib
-          cp -r artifacts/libs/* artifacts/Cygnus/lib/ 2>/dev/null || true
-
-          # Use a REAL test label (the file is tests/models/test_space.py). A bogus label
-          # makes Django report a 1-test import error and still print "Ran 1 test", which
-          # would pass this check without ever building the DB — false green.
-          cd artifacts/Cygnus
-          PYTHONPATH="$RUNNER_TEMP" DJANGO_SETTINGS_MODULE=ci_settings \
-            python manage.py test tests.models.test_space --noinput --verbosity=2 \
-            2>&1 | tee /tmp/smoke.txt || true
-
-          # Building the test DB runs the FULL migration set against the db service, so a
-          # missing extension (e.g. pgvector) surfaces here as a NotSupportedError before
-          # any test runs — fail loudly on it.
-          if grep -qiE 'extension .* is not available|NotSupportedError|ModuleNotFoundError' /tmp/smoke.txt; then
-            echo "::error::Environment is broken — see the error above (missing extension or package)."
-            exit 1
-          fi
-          if ! grep -qE 'Ran [0-9]+ test' /tmp/smoke.txt; then
-            echo "::error::Tests did not run — the test database failed to build."
-            exit 1
-          fi
-          echo "✅ Environment OK: app imported, full migrations applied on postgis+pgvector, tests ran."
+      - name: Verify environment (Django / GIS / PostGIS / pgvector / AWS)
+        # Self-contained check — no app code required. Each pillar is exercised
+        # for real: Django configures + migrates on the postgis backend, GDAL/GEOS
+        # load through GeoDjango, PostGIS answers a spatial query, pgvector stores
+        # vectors and answers a <-> query, and aws CLI / boto3 both respond.
+        env:
+          DB_HOST: db
+          DB_PORT: "5432"
+        run: python .github/scripts/smoke_env.py

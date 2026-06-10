@@ -26,8 +26,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         binutils libproj-dev gdal-bin \
         postgresql-client \
-        git jq curl ca-certificates gnupg \
+        git jq curl ca-certificates gnupg unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# --- AWS CLI v2 (matches the production image; boto3 comes from requirements) -
+RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o /tmp/awscliv2.zip \
+    && unzip -q /tmp/awscliv2.zip -d /tmp \
+    && /tmp/aws/install \
+    && rm -rf /tmp/aws /tmp/awscliv2.zip
 
 # --- Node 20 + Claude Code CLI (the agent loop runs claude -p ...) ----------
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
