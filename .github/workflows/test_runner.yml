@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Planner Agent
+      - name: Run Test Runner Agent
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN_PAT: ${{ secrets.AGENT_PAT}}
