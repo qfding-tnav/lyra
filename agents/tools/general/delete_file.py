@@ -12,7 +12,7 @@ from tools.utils import path_utils
 
 class DeleteFile:
     """Tool Functions: delete_file"""
-    DELETE_DEFINITION = {
+    DEFINITION = {
         "type": "function",
         "function": {
             "name": "delete_file",
