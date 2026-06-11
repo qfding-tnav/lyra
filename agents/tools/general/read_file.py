@@ -36,7 +36,8 @@ class ReadFile:
         print(f"function calling ReadFile {self.args}")
         """Reads the content of an existing file."""
         safe_path = path_utils.get_safe_path(self.filepath)
-
+        if not safe_path:
+            return f"Path is None!!!"
         if not os.path.exists(safe_path):
             return (f"Error: File '{self.filepath}' does not exist. "
                     f"Try using list_directory to see what files are available.")

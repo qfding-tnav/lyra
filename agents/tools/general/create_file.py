@@ -38,6 +38,8 @@ class CreateFile:
         print(f"function calling CreateFile {self.args}")
         """Creates a file with the given content. Restricted to the artifacts/ directory."""
         safe_path = path_utils.get_safe_path(self.filepath)
+        if not safe_path:
+            return f"Path is None!!!"
         os.makedirs(os.path.dirname(safe_path), exist_ok=True)
         try:
             with open(safe_path, "w", encoding="utf-8") as f:

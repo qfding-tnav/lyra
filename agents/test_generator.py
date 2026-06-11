@@ -10,7 +10,7 @@ from tools.utils import github_utils, skill_utils
 
 class TestGenerator:
     def __init__(self):
-        self.github_token = os.getenv("GITHUB_TOKEN")
+        self.github_token = os.getenv("GITHUB_TOKEN_PAT")
         self.llm_api_key = os.getenv("LLM_API_KEY")
         self.repo_name = os.getenv("REPO_NAME")
         self.issue_number = os.getenv("ISSUE_NUMBER")
@@ -60,7 +60,7 @@ class TestGenerator:
             comment_text = (
                 f"🛠️ {agent_constants.TEST_GENERATOR_SIGNATURE}: "
                 f"{section_constants.TEST_GENERATOR_EXEC_COMPLETE}-{current_try_count + 1}\n\n"
-                "I have finished writing the test code based on the approved plan and generate code"
+                "I have finished writing the test code based on the approved plan and generate code.\n"
                 f"Here is the summary:\n\n{final_summary}"
             )
             self.issue.create_comment(comment_text)

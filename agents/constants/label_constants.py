@@ -19,7 +19,7 @@ TEST_GENERATION_PENDING = "status:test-generation-pending"
 TEST_GENERATION_COMPLETE = "status:test-generation-complete"
 
 # Test Runner
-TEST_RUNNER_PENDING = "status:test-runner-pending"
+TEST_RUNNER_FAILED = "status:test-runner-failed"
 TEST_RUNNER_COMPLETE = "status:test-runner-complete"
 
 # Evaluation

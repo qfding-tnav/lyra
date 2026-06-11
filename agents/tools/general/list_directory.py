@@ -42,7 +42,8 @@ class ListDirectory:
         """Lists files and folders in the given directory within artifacts/."""
         # If dirpath is empty, default to the root of artifacts/
         safe_path = path_utils.get_safe_path(self.dirpath)
-
+        if not safe_path:
+            return f"Path is None!!!"
         if not os.path.exists(safe_path):
             return f"Error: Directory {safe_path} does not exist."
         if not os.path.isdir(safe_path):

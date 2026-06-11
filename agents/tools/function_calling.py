@@ -4,6 +4,7 @@ import json
 
 from constants import agent_constants
 from tools.general.create_file import CreateFile
+from tools.general.delete_file import DeleteFile
 from tools.general.list_directory import ListDirectory
 from tools.general.read_file import ReadFile
 from tools.general.run_bash_cmd import RunBashCmd
@@ -13,6 +14,7 @@ class FunctionCalling:
     # register function calling to set FUNCTION_CALLING_SET
     FC_GENERATOR_SET = {
         "create_file": CreateFile,
+        "delete_file": DeleteFile,
         "read_file": ReadFile,
         "list_directory": ListDirectory,
         "run_bash_cmd": RunBashCmd
