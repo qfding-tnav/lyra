@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.12.13/x64/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/unit-converter/unit-converter/artifacts/unitConverter
+plugins: anyio-4.13.0
+collecting ... collected 14 items
+
+tests/test_length_converter.py::test_convert_kilometers_to_meters_exact PASSED [  7%]
+tests/test_length_converter.py::test_convert_mile_to_kilometer_approximately PASSED [ 14%]
+tests/test_length_converter.py::test_convert_feet_to_meters_approximately PASSED [ 21%]
+tests/test_length_converter.py::test_identity_conversion_meters PASSED   [ 28%]
+tests/test_length_converter.py::test_identity_conversion_miles PASSED    [ 35%]
+tests/test_length_converter.py::test_convert_meters_to_kilometers PASSED [ 42%]
+tests/test_length_converter.py::test_convert_meters_to_feet PASSED       [ 50%]
+tests/test_length_converter.py::test_convert_kilometers_to_miles PASSED  [ 57%]
+tests/test_length_converter.py::test_zero_value_conversion PASSED        [ 64%]
+tests/test_length_converter.py::test_negative_value_converts_mathematically PASSED [ 71%]
+tests/test_length_converter.py::test_decimal_input_value_conversion PASSED [ 78%]
+tests/test_length_converter.py::test_unsupported_source_unit_raises_value_error PASSED [ 85%]
+tests/test_length_converter.py::test_unsupported_target_unit_raises_value_error PASSED [ 92%]
+tests/test_length_converter.py::test_both_unsupported_units_raise_value_error_for_source_first PASSED [100%]
+
+============================== 14 passed in 0.03s ==============================
