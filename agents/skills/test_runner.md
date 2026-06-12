@@ -24,23 +24,22 @@ When you receive the source code, test files, and project configuration, you mus
    standard error (`stderr`), and coverage results.
 4. **Storage & Reporting:** Format the results strictly into the required JSON schema, and use the `create_file` tool to
    save this JSON object to `artifacts/{project_name}/{test_report_dir}/execution_results.json`. Once saved, output a
-   brief
-   confirmation that the report is ready for the Evaluator.
+   brief confirmation that the report is ready for the Evaluator.
 
 ---
 
 ### 2. Observational Failure Classification
 
 If the execution fails (non-zero exit code), you must apply an observational label to the failure. **Note: These labels
-are purely observational based on *when* the failure occurred. You are not diagnosing the root cause.** | Label |
-Definition |
-| :--- | :--- |
-| **`test_failure`** | The test framework ran successfully, but specific test assertions failed. |
-| **`build_failure`** | The application or test code failed to compile or build. |
-| **`runtime_failure`** | The process crashed outright due to an unhandled exception before tests could complete. |
-| **`infrastructure_failure`**| Tooling crashed, dependencies failed to install, or environment permissions were
-denied. |
-| **`none`** | All validations passed successfully. |
+are purely observational based on *when* the failure occurred. You are not diagnosing the root cause.**
+
+| Label                        | Definition                                                                               |
+|:-----------------------------|:-----------------------------------------------------------------------------------------|
+| **`test_failure`**           | The test framework ran successfully, but specific test assertions failed.                |
+| **`build_failure`**          | The application or test code failed to compile or build.                                 |
+| **`runtime_failure`**        | The process crashed outright due to an unhandled exception before tests could complete.  |
+| **`infrastructure_failure`** | Tooling crashed, dependencies failed to install, or environment permissions were denied. |
+| **`none`**                   | All validations passed successfully.                                                     |
 
 ---
 
@@ -60,3 +59,4 @@ summarize the `stdout` or `stderr`—provide the raw text.
   "stderr": "...raw error output...",
   "coverage": 82.4
 }
+```
