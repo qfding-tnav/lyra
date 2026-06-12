@@ -83,3 +83,15 @@ def get_latest_generator_summary(issue):
                 section_constants.GENERATOR_EXEC_COMPLETE in comment.body):
             return comment.body
     return ""
+
+
+def get_latest_test_runner_result(issue):
+    """Scans the issue to find the latest test execution result from the Test Runner Agent."""
+    print("Retrieving latest test runner result...")
+    comments = list(issue.get_comments())
+    for comment in reversed(comments):
+        if (agent_constants.TEST_RUNNER_SIGNATURE in comment.body and
+                (section_constants.TEST_RUNNER_EXEC_COMPLETE in comment.body or
+                 section_constants.TEST_RUNNER_EXEC_ERROR in comment.body)):
+            return comment.body
+    return ""
