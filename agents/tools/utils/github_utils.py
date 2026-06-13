@@ -85,6 +85,17 @@ def get_latest_generator_summary(issue):
     return ""
 
 
+def get_latest_test_generator_summary(issue):
+    """Scans the issue to find the latest generator from the Generator Agent."""
+    print("Retrieving latest test generator summary...")
+    comments = list(issue.get_comments())
+    for comment in reversed(comments):
+        if (agent_constants.TEST_GENERATOR_SIGNATURE in comment.body and
+                section_constants.TEST_GENERATOR_EXEC_COMPLETE in comment.body):
+            return comment.body
+    return ""
+
+
 def get_latest_test_runner_result(issue):
     """Scans the issue to find the latest test execution result from the Test Runner Agent."""
     print("Retrieving latest test runner result...")
