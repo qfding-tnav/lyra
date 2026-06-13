@@ -5,10 +5,13 @@
 @Date    :   2026-05-31
 @Desc    :   This file contains the definition of the path utility.
 """
-
+import sys
 from pathlib import Path
 
-from constants import path_constants
+ROOT_DIR = str(Path(__file__).resolve().parents[3])
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+from agents.constants import path_constants  # noqa: E402
 
 
 def get_safe_path(filepath: str) -> str:
