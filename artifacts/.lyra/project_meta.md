@@ -1,11 +1,10 @@
 ---
-name: Artifact Metadata and Boundary Definition
-description: Defines the core project information, directory structure standards,
-  and strict sandboxing boundaries for agent-generated artifacts.
+name: Project Metadata and Boundary Definition
+description: Defines the core project information, directory structure standards, and strict sandboxing boundaries for agent-generated artifacts.
 type: project_metadata
 ---
 
-# Artifact Metadata & Execution Boundary (artifact_metd.md)
+# Artifact Metadata & Execution Boundary (project_meta.md)
 
 This file serves as the absolute source of truth for all agents (Planner, Generator, Evaluator, Healer) operating within
 this framework. It defines the project parameters, structural guidelines, and immutable security boundaries required
@@ -14,13 +13,23 @@ when generating or modifying code.
 ## 1. Project Information
 
 * **Project Name:** unitConverter
-* **Target Language:** Python (Default)
-* **Objective:** Ensure all agent-driven file operations are strictly confined, correctly structured, and aligned with
-  standard software development practices.
+* **Core Objective:** Ensure all agent-driven file operations are strictly confined, correctly structured, and aligned
+  with standard software development practices.
+* **Description:** This is a demo project
 
 ---
 
-## 2. Strict Sandboxing Boundaries
+## 2. Tech Stack
+
+- **Language:** Python 3.12+
+- **Testing:** Pytest
+- **Linting:** Ruff (basic rules only)
+- **Dependencies (`requirements.txt`):** *Uninitialized.* This file may not exist yet. Create it only when your code
+  requires external packages.
+
+---
+
+## 3. Strict Sandboxing Boundaries
 
 To maintain system integrity and prevent malicious or accidental overwrites of the core framework, agents are restricted
 to the `artifacts/` sandbox.
@@ -35,7 +44,7 @@ to the `artifacts/` sandbox.
 
 ---
 
-## 3. Standardized Directory Structure
+## 4. Standardized Directory Structure
 
 When a Planner or Generator agent begins constructing a new project, they must adhere to the following directory layout
 inside the designated artifact folder:
@@ -64,7 +73,7 @@ artifacts/{project_name}/
 
 ---
 
-## 4. Operational Directives
+## 5. Operational Directives
 
 **✅ DO:**
 
