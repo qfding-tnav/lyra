@@ -16,6 +16,8 @@ TEST_RUNNER_EXEC_COMPLETE = "**Test Runner Execution Complete**"
 TEST_RUNNER_EXEC_ERROR = "**Test Runner Execution Error**"
 EVALUATOR_EXEC_COMPLETE = "**Evaluator Execution Complete**"
 EVALUATOR_EXEC_ERROR = "**Evaluator Execution Error**"
+PR_CREATOR_EXEC_COMPLETE = "**Pull Request Created**"
+PR_CREATOR_EXEC_ERROR = "**Pull Request Creation Error**"
 TEST_APPROVED = "TEST-APPROVED"
 TEST_REJECTED = "TEST-REJECTED"
 
