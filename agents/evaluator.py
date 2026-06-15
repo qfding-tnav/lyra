@@ -67,14 +67,15 @@ class Evaluator:
             final_summary = response.output_text.strip()
             verdict = self._parse_verdict(final_summary)
             if verdict is True:
-                self._handle_pass(final_summary)
+                self._handle_pass()
             elif verdict is False:
-                self._handle_fail(final_summary)
+                self._handle_fail(self._format_feedback(final_summary))
             else:
-                # Fallback if the AI output matches neither the JSON schema nor the keywords
+                # Output matched neither the JSON schema nor the keywords
                 self._handle_fail(
-                    f"⚠️ Evaluator did not explicitly approve the code. "
-                    f"Marking as failed.\n\n{final_summary}")
+                    "⚠️ The evaluator did not return a clear verdict, so the change "
+                    "is being treated as failed. Please re-check the implementation "
+                    "against the approved plan.")
         else:
             print(msg)
             self.issue.create_comment(msg)
@@ -104,19 +105,43 @@ class Evaluator:
             return False
         return None
 
-    def _handle_pass(self, summary):
+    @staticmethod
+    def _format_feedback(summary):
+        """Renders the evaluator's JSON verdict as a human-readable markdown list,
+        so the raw JSON object never leaks into the issue. Falls back to the raw
+        text only if it is not the expected JSON object."""
+        match = re.search(r"\{.*\}", summary, re.DOTALL)
+        if not match:
+            return summary
+        try:
+            result = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return summary
+        lines = []
+        for item in result.get("feedback") or []:
+            tags = " · ".join(filter(None, [
+                f"**[{item['priority']}]**" if item.get("priority") else "",
+                item.get("category", ""),
+                f"`{item['file']}`" if item.get("file") else "",
+            ]))
+            message = item.get("message", "").strip()
+            lines.append(f"- {tags}\n  {message}".rstrip() if tags else f"- {message}")
+        return "\n".join(lines) if lines else (result.get("message") or "No detailed feedback provided.")
+
+    def _handle_pass(self):
         github_utils.switch_status_label(self.issue, label_constants.READY_FOR_PR)
         self.issue.create_comment(
             f"{agent_constants.EVALUATOR_SIGNATURE}: {section_constants.EVALUATOR_EXEC_COMPLETE}: "
             f"✅ {section_constants.TEST_APPROVED}\n\n"
-            f"All tests passed successfully.\n\n{summary}")
+            f"All tests passed and the implementation satisfies the approved plan.")
 
-    def _handle_fail(self, summary):
+    def _handle_fail(self, details):
         github_utils.switch_status_label(self.issue, label_constants.EVALUATION_FAILED)
         self.issue.create_comment(
             f"{agent_constants.EVALUATOR_SIGNATURE}: {section_constants.EVALUATOR_EXEC_COMPLETE}: "
             f"❌ {section_constants.TEST_REJECTED}\n\n"
-            f"The code failed the QA testing phase. Generator, please review the logs and fix the bugs.\n\n{summary}")
+            f"The code failed the QA testing phase. Generator, please review the feedback and fix the bugs.\n\n"
+            f"{details}")
 
 
 if __name__ == "__main__":
