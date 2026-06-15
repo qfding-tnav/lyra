@@ -105,13 +105,12 @@ class Evaluator:
         return None
 
     def _switch_labels(self, new_label):
-        """Defensively removes whichever trigger label is present, then applies the verdict label."""
-        current_labels = [l.name for l in self.issue.labels]
-        for label in (label_constants.TEST_RUNNER_COMPLETE,
-                      label_constants.TEST_RUNNER_FAILED,
-                      label_constants.GENERATION_COMPLETE):
-            if label in current_labels:
-                self.issue.remove_from_labels(label)
+        """Enforces a single pipeline state: strips every existing status:* label,
+        then applies the verdict label. This prevents stale trigger labels (e.g.
+        test-runner-failed) from piling up alongside the new one."""
+        for label in self.issue.labels:
+            if label.name.startswith(label_constants.STATUS_PREFIX) and label.name != new_label:
+                self.issue.remove_from_labels(label.name)
         self.issue.add_to_labels(new_label)
 
     def _handle_pass(self, summary):

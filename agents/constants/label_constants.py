@@ -6,6 +6,10 @@
 @Desc    :   list all constants variables for label
 """
 
+# Every pipeline status label shares this prefix, so a single state can be
+# enforced by stripping all status:* labels before applying a new one.
+STATUS_PREFIX = "status:"
+
 # Planning
 PLAN_APPROVED = "status:plan-approved"
 PLAN_REJECTED = "status:plan-rejected"
