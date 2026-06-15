@@ -1,15 +1,21 @@
 import os
 import sys
+from pathlib import Path
 
 from github import Github, Auth
 
-from constants import agent_constants, section_constants, label_constants
-from tools.open_ai_client import OpenAiClient
-from tools.utils import skill_utils, github_utils
+ROOT_DIR = str(Path(__file__).resolve().parents[1])
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+
+from agents.constants import agent_constants, section_constants, label_constants
+from agents.tools.open_ai_client import OpenAiClient
+from agents.tools.utils import skill_utils, github_utils
 
 
 class Planner:
     """This class is responsible for interacting with the GitHub API."""
+    ROLE = "planner"
 
     def __init__(self):
         """Initializes the Planner Agent, loading configuration, clients, and skills."""
@@ -35,7 +41,7 @@ class Planner:
 
     def _generate_plan(self, issue_title, issue_body, feedback=None, previous_plan=None):
         """Core logic to communicate with the LLM and generate a Markdown plan."""
-        role_instructions = skill_utils.load_skills(["planner.md"])
+        role_instructions = skill_utils.load_agent_role_skill(self.ROLE)
 
         system_prompt = f"{role_instructions}"
 

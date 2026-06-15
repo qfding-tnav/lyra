@@ -2,15 +2,22 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 
 from github import Github, Auth
 
-from constants import agent_constants, label_constants, section_constants
-from tools.open_ai_client import OpenAiClient
-from tools.utils import github_utils, skill_utils
+ROOT_DIR = str(Path(__file__).resolve().parents[1])
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+
+from agents.constants import agent_constants, label_constants, section_constants
+from agents.tools.open_ai_client import OpenAiClient
+from agents.tools.utils import github_utils, skill_utils
 
 
 class Evaluator:
+    ROLE = "evaluator"
+
     def __init__(self):
         # 1. Load Environment Variables
         self.github_token = os.getenv("GITHUB_TOKEN")
@@ -35,12 +42,12 @@ class Evaluator:
         generator_summary = github_utils.get_latest_generator_summary(self.issue)
         test_runner_result = github_utils.get_latest_test_runner_result(self.issue)
 
-        role_instructions = skill_utils.load_skills(["evaluator.md"])
+        role_instructions = skill_utils.load_agent_role_skill(self.ROLE)
         if not role_instructions:
             print("No role instructions found. Exiting.")
             return
         # Load Available Skills
-        skills_context = skill_utils.load_skills(["artifacts.md"])
+        skills_context = skill_utils.load_skills(["constraints/artifacts.md"])
         if skills_context:
             skills_context = f"### AVAILABLE FRAMEWORK SKILLS\n\n{skills_context}\n\n"
 

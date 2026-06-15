@@ -1,16 +1,23 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 from github import Github, Auth
 
-from constants import agent_constants, label_constants, path_constants, section_constants
+ROOT_DIR = str(Path(__file__).resolve().parents[1])
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+
+from agents.constants import agent_constants, label_constants, path_constants, section_constants
 
 MAX_COMMENT_OUTPUT_CHARS = 6000
 PYTEST_TIMEOUT_SECONDS = 300
 
 
 class TestRunner:
+    ROLE = "test_runner"
+
     def __init__(self):
         # Use PAT so the label change can trigger the downstream Evaluator workflow
         self.github_token_pat = os.getenv("GITHUB_TOKEN_PAT")

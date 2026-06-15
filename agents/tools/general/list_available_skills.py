@@ -34,8 +34,9 @@ class ListAvailableSkills:
 
     def __init__(self, args={}):
         self.args = args
-        self.skill_dirs = [os.path.join(ROOT_DIR, "agents", "skills"),
-                           os.path.join(ROOT_DIR, "artifacts", "skills")]
+        self.skill_dirs = [os.path.join(ROOT_DIR, "agents", "skills", "tools"),
+                           os.path.join(ROOT_DIR, "artifacts", ".lyra", "rules"),
+                           os.path.join(ROOT_DIR, "artifacts", ".lyra", "custom_tools")]
 
     # must be defined
     def process(self):
