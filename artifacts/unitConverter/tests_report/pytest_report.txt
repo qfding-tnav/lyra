@@ -11,7 +11,7 @@ tests/test_conversions.py::test_km_to_miles_typical_positive_value_is_correctly_
 tests/test_conversions.py::test_km_to_miles_negative_value_returns_negative_converted_result PASSED [ 50%]
 tests/test_conversions.py::test_km_to_miles_very_small_decimal_rounds_to_four_places PASSED [ 62%]
 tests/test_conversions.py::test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding FAILED [ 75%]
-tests/test_conversions.py::test_km_to_miles_rounds_half_up_at_fourth_decimal_boundary PASSED [ 87%]
+tests/test_conversions.py::test_km_to_miles_value_requiring_round_up_is_rounded_to_four_places PASSED [ 87%]
 tests/test_conversions.py::test_km_to_miles_returns_float_type PASSED    [100%]
 
 =================================== FAILURES ===================================
@@ -23,4 +23,4 @@ E    +  where 76712.4684 = km_to_miles(123456.789)
 =========================== short test summary info ============================
 FAILED tests/test_conversions.py::test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding - assert 76712.4684 == 76712.4683
  +  where 76712.4684 = km_to_miles(123456.789)
-========================= 1 failed, 7 passed in 0.04s ==========================
+========================= 1 failed, 7 passed in 0.03s ==========================
