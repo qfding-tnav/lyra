@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.12.13/x64/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/lyra/lyra/artifacts/unitConverter
+plugins: anyio-4.13.0
+collecting ... collected 7 items
+
+tests/test_conversions.py::test_km_to_miles_one_kilometer_returns_expected_value PASSED [ 14%]
+tests/test_conversions.py::test_km_to_miles_zero_returns_zero PASSED     [ 28%]
+tests/test_conversions.py::test_km_to_miles_typical_positive_value_is_correctly_rounded PASSED [ 42%]
+tests/test_conversions.py::test_km_to_miles_negative_value_returns_negative_converted_result PASSED [ 57%]
+tests/test_conversions.py::test_km_to_miles_very_small_decimal_rounds_to_four_places PASSED [ 71%]
+tests/test_conversions.py::test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding FAILED [ 85%]
+tests/test_conversions.py::test_km_to_miles_returns_float_type PASSED    [100%]
+
+=================================== FAILURES ===================================
+__ test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding __
+tests/test_conversions.py:34: in test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding
+    assert km_to_miles(123456.789) == 76712.4675
+E   assert 76712.4684 == 76712.4675
+E    +  where 76712.4684 = km_to_miles(123456.789)
+=========================== short test summary info ============================
+FAILED tests/test_conversions.py::test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding - assert 76712.4684 == 76712.4675
+ +  where 76712.4684 = km_to_miles(123456.789)
+========================= 1 failed, 6 passed in 0.04s ==========================
