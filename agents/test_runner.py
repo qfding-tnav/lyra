@@ -10,6 +10,7 @@ if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
 from agents.constants import agent_constants, label_constants, path_constants, section_constants
+from agents.tools.utils import github_utils
 
 MAX_COMMENT_OUTPUT_CHARS = 6000
 PYTEST_TIMEOUT_SECONDS = 300
@@ -69,11 +70,6 @@ class TestRunner:
             f.write(output)
         print(f"Test report saved to {report_path}")
 
-    def _switch_labels(self, new_label):
-        if label_constants.TEST_GENERATION_COMPLETE in [l.name for l in self.issue.labels]:
-            self.issue.remove_from_labels(label_constants.TEST_GENERATION_COMPLETE)
-        self.issue.add_to_labels(new_label)
-
     def execute(self):
         print(f"Starting Test Runner Agent for Issue #{self.issue_number}")
 
@@ -83,7 +79,7 @@ class TestRunner:
                 f"🛠️ {agent_constants.TEST_RUNNER_SIGNATURE}: {section_constants.TEST_RUNNER_EXEC_ERROR}\n\n"
                 f"No project with a `tests/` directory found under `{path_constants.ARTIFACTS_DIR}/`."
             )
-            self._switch_labels(label_constants.TEST_RUNNER_FAILED)
+            github_utils.switch_status_label(self.issue, label_constants.TEST_RUNNER_FAILED)
             return
 
         exit_code, output = self._run_pytest(project_dir)
@@ -98,7 +94,7 @@ class TestRunner:
                 f"All tests passed in `{project_dir}`.\n\n"
                 f"```text\n{output}\n```"
             )
-            self._switch_labels(label_constants.TEST_RUNNER_COMPLETE)
+            github_utils.switch_status_label(self.issue, label_constants.TEST_RUNNER_COMPLETE)
             print("Tests passed. Issue labeled for the Evaluator.")
         else:
             self.issue.create_comment(
@@ -106,7 +102,7 @@ class TestRunner:
                 f"Tests failed in `{project_dir}` (exit code {exit_code}).\n\n"
                 f"```text\n{output}\n```"
             )
-            self._switch_labels(label_constants.TEST_RUNNER_FAILED)
+            github_utils.switch_status_label(self.issue, label_constants.TEST_RUNNER_FAILED)
             print("Tests failed. Issue labeled as test-runner-failed.")
 
 

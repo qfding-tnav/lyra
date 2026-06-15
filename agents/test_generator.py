@@ -71,9 +71,8 @@ class TestGenerator:
                 f"Here is the summary:\n\n{final_summary}"
             )
             self.issue.create_comment(comment_text)
-            # Clean up trigger labels
-            self.issue.set_labels()
-            self.issue.add_to_labels(label_constants.TEST_GENERATION_COMPLETE)
+            # Switch to a single pipeline state, clearing any trigger label
+            github_utils.switch_status_label(self.issue, label_constants.TEST_GENERATION_COMPLETE)
             print("Posted completion comment to GitHub.")
         else:
             comment_text = (

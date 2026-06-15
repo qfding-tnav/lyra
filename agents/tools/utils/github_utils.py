@@ -5,7 +5,18 @@
 @Date    :   2026-06-02
 @Desc    :   This file contains the definition of the github_utils.
 """
-from constants import agent_constants, section_constants
+from constants import agent_constants, label_constants, section_constants
+
+
+def switch_status_label(issue, new_label):
+    """Enforces a single pipeline state on the issue: removes every existing
+    status:* label, then applies new_label. Non-status labels (bug, enhancement,
+    user-applied labels, ...) are preserved. Use this for every pipeline state
+    transition so stale trigger labels never pile up."""
+    for label in issue.labels:
+        if label.name.startswith(label_constants.STATUS_PREFIX) and label.name != new_label:
+            issue.remove_from_labels(label.name)
+    issue.add_to_labels(new_label)
 
 
 def get_previous_plan(issue):

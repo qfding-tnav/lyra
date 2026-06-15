@@ -99,12 +99,8 @@ class Generator:
                 f"Here is the summary:\n\n{final_summary}"
             )
             self.issue.create_comment(comment_text)
-            # Clean up trigger labels
-            if label_constants.PLAN_APPROVED in [l.name for l in self.issue.labels]:
-                self.issue.remove_from_labels(label_constants.PLAN_APPROVED)
-            if label_constants.EVALUATION_FAILED in [l.name for l in self.issue.labels]:
-                self.issue.remove_from_labels(label_constants.EVALUATION_FAILED)
-            self.issue.add_to_labels(label_constants.GENERATION_COMPLETE)
+            # Switch to a single pipeline state, clearing any trigger label
+            github_utils.switch_status_label(self.issue, label_constants.GENERATION_COMPLETE)
             print("Posted completion comment to GitHub.")
         else:
             comment_text = (

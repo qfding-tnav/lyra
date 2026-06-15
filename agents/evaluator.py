@@ -104,24 +104,15 @@ class Evaluator:
             return False
         return None
 
-    def _switch_labels(self, new_label):
-        """Enforces a single pipeline state: strips every existing status:* label,
-        then applies the verdict label. This prevents stale trigger labels (e.g.
-        test-runner-failed) from piling up alongside the new one."""
-        for label in self.issue.labels:
-            if label.name.startswith(label_constants.STATUS_PREFIX) and label.name != new_label:
-                self.issue.remove_from_labels(label.name)
-        self.issue.add_to_labels(new_label)
-
     def _handle_pass(self, summary):
-        self._switch_labels(label_constants.READY_FOR_PR)
+        github_utils.switch_status_label(self.issue, label_constants.READY_FOR_PR)
         self.issue.create_comment(
             f"{agent_constants.EVALUATOR_SIGNATURE}: {section_constants.EVALUATOR_EXEC_COMPLETE}: "
             f"✅ {section_constants.TEST_APPROVED}\n\n"
             f"All tests passed successfully.\n\n{summary}")
 
     def _handle_fail(self, summary):
-        self._switch_labels(label_constants.EVALUATION_FAILED)
+        github_utils.switch_status_label(self.issue, label_constants.EVALUATION_FAILED)
         self.issue.create_comment(
             f"{agent_constants.EVALUATOR_SIGNATURE}: {section_constants.EVALUATOR_EXEC_COMPLETE}: "
             f"❌ {section_constants.TEST_REJECTED}\n\n"

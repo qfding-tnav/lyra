@@ -84,7 +84,7 @@ class Planner:
         repo = gh.get_repo(self.repo_name)
         issue = repo.get_issue(number=int(self.issue_number))
 
-        issue.add_to_labels(label_constants.PLAN_APPROVED)
+        github_utils.switch_status_label(issue, label_constants.PLAN_APPROVED)
         issue.create_comment(
             f"{agent_constants.PLANNER_SIGNATURE}: "
             "✅ **Plan Approved!** The `plan-approved` label has been added. The Generator Agent will now take over."

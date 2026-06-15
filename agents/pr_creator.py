@@ -75,15 +75,8 @@ class PrCreator:
         )
         return body
 
-    def _switch_labels(self, new_label):
-        """Removes the trigger label, then applies the human-review label."""
-        current_labels = [l.name for l in self.issue.labels]
-        if label_constants.READY_FOR_PR in current_labels:
-            self.issue.remove_from_labels(label_constants.READY_FOR_PR)
-        self.issue.add_to_labels(new_label)
-
     def _handle_success(self, pr):
-        self._switch_labels(label_constants.NEEDS_HUMAN_REVIEW)
+        github_utils.switch_status_label(self.issue, label_constants.NEEDS_HUMAN_REVIEW)
         self.issue.create_comment(
             f"{agent_constants.PR_CREATOR_SIGNATURE}: {section_constants.PR_CREATOR_EXEC_COMPLETE}: "
             f"🚀 [PR #{pr.number}]({pr.html_url}) is open from `{self.branch_name}` "
@@ -91,7 +84,7 @@ class PrCreator:
             f"Awaiting human review. Once a reviewer approves, the PR can be merged.")
 
     def _handle_existing(self, pr):
-        self._switch_labels(label_constants.NEEDS_HUMAN_REVIEW)
+        github_utils.switch_status_label(self.issue, label_constants.NEEDS_HUMAN_REVIEW)
         self.issue.create_comment(
             f"{agent_constants.PR_CREATOR_SIGNATURE}: {section_constants.PR_CREATOR_EXEC_COMPLETE}: "
             f"ℹ️ An open PR already exists for this issue: [PR #{pr.number}]({pr.html_url}). "
