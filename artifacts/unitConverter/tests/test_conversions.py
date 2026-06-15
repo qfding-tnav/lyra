@@ -31,7 +31,11 @@ def test_km_to_miles_very_small_decimal_rounds_to_four_places():
 
 
 def test_km_to_miles_large_value_preserves_correct_multiplication_and_rounding():
-    assert km_to_miles(123456.789) == 76712.4675
+    assert km_to_miles(123456.789) == 76712.4683
+
+
+def test_km_to_miles_rounds_half_up_at_fourth_decimal_boundary():
+    assert km_to_miles(1.00004) == 0.6214
 
 
 def test_km_to_miles_returns_float_type():
