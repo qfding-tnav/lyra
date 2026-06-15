@@ -37,7 +37,8 @@ class RunBashCmd:
                 },
                 "required": [
                     "command",
-                    "working_dir"
+                    "working_dir",
+                    "output_file"
                 ],
                 "additionalProperties": False
             }
