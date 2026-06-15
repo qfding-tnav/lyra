@@ -1,0 +1,40 @@
+name: Agent PR Creator
+
+on:
+  issues:
+    types: [ labeled ]
+
+jobs:
+  create-pr:
+    # Wake up once the Evaluator approves the code and marks it ready for a PR
+    if: github.event.label.name == 'status:ready-for-pr'
+    runs-on: ubuntu-latest
+
+    # Needs permissions to open the PR and update the issue
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Use PAT so the PR is attributed to the bot and can wake review-driven workflows
+          token: ${{ secrets.AGENT_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run PR Creator Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN_PAT: ${{ secrets.AGENT_PAT }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO_NAME: ${{ github.repository }}
+        run: python agents/pr_creator.py
