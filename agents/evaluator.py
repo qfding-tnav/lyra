@@ -107,7 +107,9 @@ class Evaluator:
     def _switch_labels(self, new_label):
         """Defensively removes whichever trigger label is present, then applies the verdict label."""
         current_labels = [l.name for l in self.issue.labels]
-        for label in (label_constants.TEST_RUNNER_COMPLETE, label_constants.GENERATION_COMPLETE):
+        for label in (label_constants.TEST_RUNNER_COMPLETE,
+                      label_constants.TEST_RUNNER_FAILED,
+                      label_constants.GENERATION_COMPLETE):
             if label in current_labels:
                 self.issue.remove_from_labels(label)
         self.issue.add_to_labels(new_label)

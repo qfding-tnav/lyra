@@ -6,8 +6,10 @@ on:
 
 jobs:
   evaluate-code:
-    # Wake up as soon as the Generator finishes its work
-    if: github.event.label.name == 'status:test-runner-complete'
+    # Wake up when the Test Runner finishes — whether the tests passed
+    # (test-runner-complete) or failed (test-runner-failed). The Evaluator is the
+    # arbiter that decides if a failure is a real code bug or a faulty generated test.
+    if: github.event.label.name == 'status:test-runner-complete' || github.event.label.name == 'status:test-runner-failed'
     runs-on: ubuntu-latest
     
     # Needs permissions to update the issue and push test code
