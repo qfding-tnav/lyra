@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.12.13/x64/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/lyra/lyra/artifacts/unitConverter
+plugins: anyio-4.13.0
+collecting ... collected 10 items
+
+tests/test_conversions.py::test_celsius_to_fahrenheit_positive_cases[0-32.0] PASSED [ 10%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_positive_cases[100-212.0] PASSED [ 20%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_positive_cases[25-77.0] PASSED [ 30%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_positive_cases[37.5-99.5] PASSED [ 40%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_negative_and_boundary_values[-40--40.0] PASSED [ 50%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_negative_and_boundary_values[-273.15--459.67] PASSED [ 60%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_rounding_and_large_input_regression[0.001-32.0] PASSED [ 70%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_rounding_and_large_input_regression[10000000000.0-18000000032.0] PASSED [ 80%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_rounding_and_large_input_regression[0.5555555556-33.0] PASSED [ 90%]
+tests/test_conversions.py::test_celsius_to_fahrenheit_returns_float_for_integer_input PASSED [100%]
+
+============================== 10 passed in 0.02s ==============================
