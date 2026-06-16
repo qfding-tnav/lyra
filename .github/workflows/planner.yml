@@ -6,10 +6,12 @@ on:
   issue_comment:
     types: [ created ] # Wake up when a human replies with feedback or approval
 
-# Serialize all agent runs for the same issue so overlapping events never race
-# on labels or the feature branch.
+# Serialize re-runs of THIS workflow for the same issue so overlapping events
+# never race on labels or the feature branch. The group must include the
+# workflow name: all agent workflows listen on the same labeled/comment events,
+# so a shared group would make sibling workflows cancel each other.
 concurrency:
-  group: agent-issue-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-issue-${{ github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
