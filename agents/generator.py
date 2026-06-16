@@ -66,11 +66,13 @@ class Generator:
             # get loop limits
             current_try_count = github_utils.get_evaluator_reject_number_after_approved(self.issue)
             if current_try_count >= agent_constants.AGENT_RETRY_LIMIT:
-                print("Max retry limit reached. Exiting.")
+                print("Max retry limit reached. Handing off to a human.")
                 self.issue.create_comment(
                     f"🛠️ {agent_constants.GENERATOR_SIGNATURE}: {section_constants.GENERATOR_EXEC_ERROR}\n\n"
-                    f"Max retry limit {agent_constants.AGENT_RETRY_LIMIT} reached. Exiting."
+                    f"Max retry limit {agent_constants.AGENT_RETRY_LIMIT} reached. Handing off for human review."
                 )
+                # Don't leave the issue stuck on evaluation-failed: hand off to a human
+                github_utils.switch_status_label(self.issue, label_constants.NEEDS_HUMAN_REVIEW)
                 return
             # Get latest evaluation reject information and generate code
             error_info = github_utils.get_evaluator_reject_content(self.issue)

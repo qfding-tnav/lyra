@@ -4,10 +4,17 @@ on:
   issues:
     types: [ labeled ]
 
+# Serialize all agent runs for the same issue so overlapping events never race
+# on labels or the feature branch.
+concurrency:
+  group: agent-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   plan-tasks:
     if: github.event.label.name == 'status:generation-complete'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Explicitly grant permissions to modify the issue
     permissions:
       contents: write

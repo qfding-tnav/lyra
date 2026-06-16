@@ -6,6 +6,12 @@ on:
   issue_comment:
     types: [ created ] # Wake up when a human replies with feedback or approval
 
+# Serialize all agent runs for the same issue so overlapping events never race
+# on labels or the feature branch.
+concurrency:
+  group: agent-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   plan-tasks:
     if: >
@@ -15,6 +21,7 @@ jobs:
       contains(github.event.comment.body, '/plan') ||
       contains(github.event.comment.body, '/approve'))
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Explicitly grant permissions to modify the issue
     permissions:
       issues: write

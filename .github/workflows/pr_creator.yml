@@ -4,11 +4,18 @@ on:
   issues:
     types: [ labeled ]
 
+# Serialize all agent runs for the same issue so overlapping events never race
+# on labels or the feature branch.
+concurrency:
+  group: agent-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   create-pr:
     # Wake up once the Evaluator approves the code and marks it ready for a PR
     if: github.event.label.name == 'status:ready-for-pr'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     # Needs permissions to open the PR and update the issue
     permissions:

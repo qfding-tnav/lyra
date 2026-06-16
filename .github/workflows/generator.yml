@@ -4,11 +4,18 @@ on:
   issues:
     types: [ labeled ]
 
+# Serialize all agent runs for the same issue so overlapping events never race
+# on labels or the feature branch.
+concurrency:
+  group: agent-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   generate-code:
     # Only run if the label added was 'status: planned'
     if: github.event.label.name == 'status:plan-approved' || github.event.label.name == 'status:evaluation-failed'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     # Needs permissions to push code and create PRs
     permissions:

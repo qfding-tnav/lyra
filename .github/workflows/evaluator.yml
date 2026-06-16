@@ -4,6 +4,12 @@ on:
   issues:
     types: [ labeled ]
 
+# Serialize all agent runs for the same issue so overlapping events never race
+# on labels or the feature branch.
+concurrency:
+  group: agent-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   evaluate-code:
     # Wake up when the Test Runner finishes — whether the tests passed
@@ -11,11 +17,12 @@ jobs:
     # arbiter that decides if a failure is a real code bug or a faulty generated test.
     if: github.event.label.name == 'status:test-runner-complete' || github.event.label.name == 'status:test-runner-failed'
     runs-on: ubuntu-latest
-    
-    # Needs permissions to update the issue and push test code
+    timeout-minutes: 15
+
+    # Only needs to update the issue (labels + comments). It reads test results
+    # from the issue comment and does not push code.
     permissions:
       issues: write
-      contents: write
 
     steps:
       - name: Checkout code
@@ -31,9 +38,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest # Mandatory: The Evaluator's bash tool uses this to run the tests
+        run: pip install -r requirements.txt
 
       - name: Run Evaluator Agent
         env:
