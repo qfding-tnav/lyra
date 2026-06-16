@@ -96,7 +96,7 @@ class RunBashCmd:
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
         try:
             with open(log_file, "w", encoding="utf-8") as f:
-                f.write(self.content)
+                f.write(content)
             return f"Success: Created {log_file}"
         except Exception as e:
             return f"Error creating file: {str(e)}"

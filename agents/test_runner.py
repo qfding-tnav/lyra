@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from github import Github, Auth
@@ -61,14 +62,15 @@ class TestRunner:
         except subprocess.TimeoutExpired:
             return 1, f"pytest timed out after {PYTEST_TIMEOUT_SECONDS} seconds."
 
-    def _save_report(self, project_dir, output):
-        """Persist the test output to tests_report/ so the workflow commits it to the branch."""
-        report_dir = os.path.join(project_dir, "tests_report")
-        os.makedirs(report_dir, exist_ok=True)
-        report_path = os.path.join(report_dir, "pytest_report.txt")
-        with open(report_path, "w") as f:
+    def _save_report(self, output):
+        """Write the test output to a throwaway temp file; the result lives in the issue comment, not the repo."""
+        with tempfile.NamedTemporaryFile(
+            mode="w", prefix="pytest_report_", suffix=".txt", delete=False, encoding="utf-8"
+        ) as f:
             f.write(output)
-        print(f"Test report saved to {report_path}")
+            report_path = f.name
+        print(f"Test report written to temporary file {report_path}")
+        return report_path
 
     def execute(self):
         print(f"Starting Test Runner Agent for Issue #{self.issue_number}")
@@ -83,7 +85,7 @@ class TestRunner:
             return
 
         exit_code, output = self._run_pytest(project_dir)
-        self._save_report(project_dir, output)
+        self._save_report(output)
 
         if len(output) > MAX_COMMENT_OUTPUT_CHARS:
             output = "... (truncated) ...\n" + output[-MAX_COMMENT_OUTPUT_CHARS:]

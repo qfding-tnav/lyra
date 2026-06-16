@@ -37,17 +37,3 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
         run: python agents/test_runner.py
-
-      - name: Commit and Push Test Files
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Stage all files created by the Test Runner inside this specific issue's sandbox
-          git add artifacts/
-          
-          # Commit only if there are new files to commit, otherwise silently pass
-          git commit -m "test: auto-generated unit tests by Test Runner Agent for Issue #${{ github.event.issue.number }}" || echo "No changes to commit"
-          
-          # Push explicitly to the feature branch to guarantee it lands in the right place
-          git push origin feature/agent-task-${{ github.event.issue.number }}
