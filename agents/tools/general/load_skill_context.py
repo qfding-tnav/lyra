@@ -26,7 +26,7 @@ class LoadSkillContext:
                 "properties": {
                     "skill_id": {
                         "type": "string",
-                        "description": "The unique identifier of the skill to load. Must strictly match the skill name (e.g., 'static_code_analysis', 'unit_tests_execution', 'type_checking', 'security_scan')."
+                        "description": "The unique identifier of the skill to load. Pass the skill_id exactly as returned by list_available_skills, including any subfolder prefix (e.g., 'validation/static_code_analysis', 'validation/unit_test_execution_tool', 'unit_test_execution')."
                     }
                 },
                 "required": ["skill_id"]
