@@ -1,11 +1,19 @@
 import pytest
 
-from src import celsius_to_fahrenheit, fahrenheit_to_celsius, miles_to_km
+from src import (
+    celsius_to_fahrenheit,
+    fahrenheit_to_celsius,
+    kilograms_to_pounds,
+    miles_to_km,
+)
 from src.conversions import (
     celsius_to_fahrenheit as celsius_to_fahrenheit_from_module,
 )
 from src.conversions import (
     fahrenheit_to_celsius as fahrenheit_to_celsius_from_module,
+)
+from src.conversions import (
+    kilograms_to_pounds as kilograms_to_pounds_from_module,
 )
 from src.conversions import miles_to_km as miles_to_km_from_module
 
@@ -119,3 +127,40 @@ class TestFahrenheitToCelsius:
 
     def test_function_is_importable_from_package_level(self):
         assert fahrenheit_to_celsius is fahrenheit_to_celsius_from_module
+
+
+class TestKilogramsToPounds:
+    @pytest.mark.parametrize(
+        ("kilograms", "expected"),
+        [
+            (0, 0.0),
+            (1, 2.2),
+            (2.5, 5.51),
+            (10, 22.05),
+            (50, 110.23),
+        ],
+    )
+    def test_known_weight_conversions_return_expected_values(self, kilograms, expected):
+        assert kilograms_to_pounds(kilograms) == expected
+
+    def test_rounding_behavior_matches_two_decimal_places(self):
+        assert kilograms_to_pounds(0.001) == 0.0
+
+    def test_integer_input_returns_float(self):
+        result = kilograms_to_pounds(1)
+        assert isinstance(result, float)
+
+    @pytest.mark.parametrize("invalid_value", ["abc", None, [], {}, True, False])
+    def test_invalid_inputs_raise_value_error(self, invalid_value):
+        with pytest.raises(ValueError):
+            kilograms_to_pounds(invalid_value)
+
+    def test_negative_input_converts_mathematically(self):
+        assert kilograms_to_pounds(-1) == -2.2
+
+    def test_very_large_input_returns_correctly_rounded_result(self):
+        kilograms = 1_000_000
+        assert kilograms_to_pounds(kilograms) == 2_204_620.0
+
+    def test_function_is_importable_from_package_level(self):
+        assert kilograms_to_pounds is kilograms_to_pounds_from_module
