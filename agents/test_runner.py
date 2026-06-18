@@ -47,7 +47,7 @@ class TestRunner:
 
     def _run_pytest(self, project_dir):
         """Run pytest inside the project sandbox and return (exit_code, output)."""
-        command = [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short"]
+        command = [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short", "--cov=src", "--cov-report=term-missing"]
         print(f"Running: {' '.join(command)} (cwd={project_dir})")
         try:
             result = subprocess.run(

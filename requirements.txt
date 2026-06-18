@@ -1,4 +1,5 @@
 openai
 PyGithub
 pytest
+pytest-cov
 PyYAML
